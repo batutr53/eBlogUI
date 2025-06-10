@@ -11,7 +11,11 @@ namespace eBlog.Domain.Entities
         public string PasswordHash { get; set; } = null!;
         public string? ProfileImageUrl { get; set; }
         public string? Bio { get; set; }
+        public string PasswordResetToken { get; set; }
+        public DateTime? ResetTokenExpires { get; set; }
 
+        public string EmailVerificationToken { get; set; }
+        public bool IsEmailVerified { get; set; } = false;
         // Çoklu dil için isim/biografi çeviri eklenebilir
         public bool IsAuthor { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -22,5 +26,7 @@ namespace eBlog.Domain.Entities
         public ICollection<Post> Posts { get; set; } = new List<Post>();
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<Product> Product { get; set; } = new List<Product>();
+        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();  
     }
 }

@@ -5,6 +5,8 @@ namespace eBlog.Domain.Interfaces
     public interface IUserRepository : IGenericRepository<User>
     {
         Task<User?> GetByEmailAsync(string email);
-        // Kullanıcıya özel başka metotlar da eklenebilir.
+        Task<User> GetByIdWithRolesAsync(Guid userId);
+        Task<User> GetByResetTokenAsync(string resetToken);
+        Task<User> GetByEmailVerificationTokenAsync(string token);
     }
 }

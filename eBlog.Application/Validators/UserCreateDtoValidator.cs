@@ -9,7 +9,7 @@ namespace eBlog.Application.Validators
         {
             RuleFor(x => x.UserName).NotEmpty().MaximumLength(50);
             RuleFor(x => x.Email).NotEmpty().EmailAddress();
-            RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
+            RuleFor(x => x.PasswordHash).NotEmpty().MinimumLength(6);
         }
     }
 }

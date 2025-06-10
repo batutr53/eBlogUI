@@ -15,6 +15,7 @@ namespace eBlog.Persistence.Contexts
 
         // DbSets
         public DbSet<User> Users => Set<User>();
+        public DbSet<UserRole> UserRoles => Set<UserRole>();
         public DbSet<Post> Posts => Set<Post>();
         public DbSet<Category> Categories => Set<Category>();
         public DbSet<Tag> Tags => Set<Tag>();
@@ -29,6 +30,7 @@ namespace eBlog.Persistence.Contexts
         public DbSet<CartItem> CartItems => Set<CartItem>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<SeoMetadata> SeoMetadatas => Set<SeoMetadata>();
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

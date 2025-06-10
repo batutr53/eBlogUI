@@ -11,5 +11,22 @@ namespace eBlog.Persistence.Repositories
 
         public async Task<User?> GetByEmailAsync(string email)
             => await _dbSet.FirstOrDefaultAsync(x => x.Email == email);
+
+        public async Task<User> GetByIdWithRolesAsync(Guid userId)
+        {
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+        }
+        public async Task<User> GetByResetTokenAsync(string resetToken)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == resetToken);
+        }
+
+        public async Task<User> GetByEmailVerificationTokenAsync(string token)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
+        }
+
     }
 }
