@@ -76,6 +76,9 @@ namespace eBlog.Application.Mappers
 
             CreateMap<PostModule, PostModuleDto>().ReverseMap();
             CreateMap<Post, PostWithModulesDto>().ReverseMap();
+            CreateMap<PostModule, PostModuleListDto>().ReverseMap();
+            CreateMap<PostModule, PostModuleCreateDto>().ReverseMap();
+            CreateMap<PostModule, PostModuleUpdateDto>().ReverseMap();
         }
     }
 }

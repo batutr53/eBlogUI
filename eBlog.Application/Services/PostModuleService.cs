@@ -6,18 +6,17 @@ using eBlog.Domain.Interfaces;
 
 namespace eBlog.Application.Services
 {
-    public class PostModuleService : IPostModuleService
+    public class PostModuleService : GenericService<PostModule, PostModuleListDto, PostModuleCreateDto, PostModuleUpdateDto>, IPostModuleService
     {
         private readonly IPostModuleRepository _repo;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _uow;
 
-        public PostModuleService(IPostModuleRepository repo, IMapper mapper, IUnitOfWork uow)
-        {
-            _repo = repo;
-            _mapper = mapper;
-            _uow = uow;
-        }
+        public PostModuleService(
+          IGenericRepository<PostModule> repository,
+          IUnitOfWork unitOfWork,
+          IMapper mapper
+      ) : base(repository, unitOfWork, mapper) { }
 
         public async Task<List<PostModuleDto>> GetModulesByPostIdAsync(Guid postId)
         {
