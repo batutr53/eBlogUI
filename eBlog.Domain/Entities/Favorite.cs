@@ -11,6 +11,7 @@ namespace eBlog.Domain.Entities
         public Guid? CommentId { get; set; }
         public Guid? BookId { get; set; }
         public DateTime CreatedAt { get; set; }
+        public Guid? ProductId { get; set; }
 
         // Navigation
         public User User { get; set; } = null!;

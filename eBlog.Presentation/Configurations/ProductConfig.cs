@@ -12,8 +12,11 @@ namespace eBlog.Persistence.Configurations
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Name).IsRequired().HasMaxLength(300);
             builder.Property(x => x.Price).HasPrecision(18, 2);
-            builder.Property(x => x.Slug).IsRequired().HasMaxLength(300);
+
             builder.Property(x => x.ProductType).IsRequired().HasMaxLength(50);
+            builder.Property(p => p.Slug)
+    .HasMaxLength(200)
+    .IsRequired(false); // ← burada false
 
             builder.HasOne(x => x.Seller)
                 .WithMany(u => u.Product) // Not: User.Books => User.Products olarak istersen rename et

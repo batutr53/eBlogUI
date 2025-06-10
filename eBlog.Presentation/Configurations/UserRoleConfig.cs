@@ -8,13 +8,15 @@ namespace eBlog.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<UserRole> builder)
         {
-            builder.HasKey(ur => ur.Id);
+            builder.HasKey(x => x.Id);
 
-            builder.Property(ur => ur.RoleName)
-                .IsRequired()
-                .HasMaxLength(50);
+            builder.HasOne(ur => ur.User)
+                   .WithMany(u => u.UserRoles)
+                   .HasForeignKey(ur => ur.UserId);
 
-            builder.HasIndex(ur => new { ur.UserId, ur.RoleName }).IsUnique(); // Bir kullanıcıda aynı rol bir kez bulunabilir
+            builder.HasOne(ur => ur.Role)
+                   .WithMany(r => r.UserRoles)
+                   .HasForeignKey(ur => ur.RoleId);
         }
     }
 }

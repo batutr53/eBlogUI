@@ -3,6 +3,7 @@ using eBlog.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace eBlog.Persistence.Contexts
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         // DbSets
+
         public DbSet<User> Users => Set<User>();
         public DbSet<UserRole> UserRoles => Set<UserRole>();
         public DbSet<Post> Posts => Set<Post>();
@@ -32,20 +34,7 @@ namespace eBlog.Persistence.Contexts
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<SeoMetadata> SeoMetadatas => Set<SeoMetadata>();
         public DbSet<RefreshToken> RefreshTokens { get; set; }
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            var entries = ChangeTracker.Entries<BaseEntity>();
-
-            foreach (var entry in entries)
-            {
-                if (entry.State == EntityState.Modified)
-                {
-                    entry.Entity.UpdatedAt = DateTime.UtcNow;
-                }
-            }
-
-            return await base.SaveChangesAsync(cancellationToken);
-        }
+        public DbSet<Role> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

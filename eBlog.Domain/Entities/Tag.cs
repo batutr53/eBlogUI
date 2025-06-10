@@ -14,6 +14,7 @@ namespace eBlog.Domain.Entities
 
         public ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
         public ICollection<Post> Posts { get; set; } = new List<Post>();
+        public ICollection<PostModule> PostModules { get; set; }
     }
 
 }

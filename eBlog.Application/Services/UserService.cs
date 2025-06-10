@@ -15,7 +15,7 @@ namespace eBlog.Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IUserDao _userDao;
         private readonly IMapper _mapper;
-
+        private readonly IRoleRepository _roleRepository;
         public UserService(
             IUserRepository userRepository,
             IUnitOfWork unitOfWork,
@@ -35,14 +35,23 @@ namespace eBlog.Application.Services
             if (user == null)
                 return new ErrorResult("Kullanıcı bulunamadı.");
 
-            if (user.UserRoles.Any(r => r.RoleName == dto.RoleName))
+            var role = await _roleRepository.GetByNameAsync(dto.RoleName);
+            if (role == null)
+                return new ErrorResult("Rol bulunamadı.");
+
+            if (user.UserRoles.Any(r => r.RoleId == role.Id))
                 return new ErrorResult("Kullanıcı bu role zaten sahip.");
 
-            user.UserRoles.Add(new UserRole { UserId = dto.UserId, RoleName = dto.RoleName });
-            await _unitOfWork.SaveChangesAsync();
+            user.UserRoles.Add(new UserRole
+            {
+                UserId = user.Id,
+                RoleId = role.Id
+            });
 
-            return new SuccessResult("Rol eklendi.");
+            await _unitOfWork.SaveChangesAsync();
+            return new SuccessResult("Rol başarıyla eklendi.");
         }
+
 
         public async Task<IResult> RemoveRoleFromUserAsync(UserRoleUpdateDto dto)
         {
@@ -50,7 +59,7 @@ namespace eBlog.Application.Services
             if (user == null)
                 return new ErrorResult("Kullanıcı bulunamadı.");
 
-            var userRole = user.UserRoles.FirstOrDefault(r => r.RoleName == dto.RoleName);
+            var userRole = user.UserRoles.FirstOrDefault(r => r.Role != null && r.Role.Name == dto.RoleName);
             if (userRole == null)
                 return new ErrorResult("Kullanıcı bu role sahip değil.");
 
@@ -59,6 +68,7 @@ namespace eBlog.Application.Services
 
             return new SuccessResult("Rol kaldırıldı.");
         }
+
 
         public async Task<IDataResult<UserDetailDto>> GetByEmailAsync(string email)
         {
@@ -96,15 +106,20 @@ namespace eBlog.Application.Services
             if (user == null)
                 return new ErrorDataResult<string>("Kullanıcı bulunamadı.");
 
-            user.UserRoles.Clear(); // mevcut rolleri sil
-            foreach (var role in roles)
+            user.UserRoles.Clear();
+
+            foreach (var roleName in roles)
             {
-                user.UserRoles.Add(new UserRole { UserId = userId, RoleName = role });
+                var role = await _roleRepository.GetByNameAsync(roleName);
+                if (role == null)
+                    return new ErrorDataResult<string>($"Rol bulunamadı: {roleName}");
+
+                user.UserRoles.Add(new UserRole { UserId = userId, RoleId = role.Id });
             }
 
             await _unitOfWork.SaveChangesAsync();
 
-            // UserDetailDto oluştur (JWT üretmek için gerekli)
+            // UserDetailDto oluştur
             var userDto = new UserDetailDto
             {
                 Id = user.Id,
@@ -113,11 +128,11 @@ namespace eBlog.Application.Services
                 Roles = roles
             };
 
-            // Yeni JWT Token oluştur
             var jwtToken = _jwtService.GenerateJwtToken(userDto);
 
-            return new SuccessDataResult<string>(jwtToken, "Kullanıcı rolleri güncellendi, yeni JWT oluşturuldu.");
+            return new SuccessDataResult<string>(jwtToken, "Roller güncellendi, JWT oluşturuldu.");
         }
+
         // Şifre yenileme için token oluşturma
         public async Task<IResult> GeneratePasswordResetTokenAsync(string email)
         {

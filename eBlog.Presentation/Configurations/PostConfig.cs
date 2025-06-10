@@ -27,31 +27,21 @@ namespace eBlog.Persistence.Configurations
             builder.HasIndex(p => p.Slug)
                 .IsUnique();
 
-            // ✅ User - One to Many
             builder.HasOne(p => p.User)
                    .WithMany(u => u.Posts)
                    .HasForeignKey(p => p.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // ✅ Category - One to Many
             builder.HasOne(p => p.Category)
                    .WithMany(c => c.Posts)
                    .HasForeignKey(p => p.CategoryId)
                    .OnDelete(DeleteBehavior.SetNull);
 
-            // ✅ PostModules - One to Many
-            builder.HasMany(p => p.Modules)
-                   .WithOne(m => m.Post)
-                   .HasForeignKey(m => m.PostId)
-                   .OnDelete(DeleteBehavior.Cascade);
-
-            // ✅ Comments - One to Many
             builder.HasMany(p => p.Comments)
                    .WithOne(c => c.Post)
                    .HasForeignKey(c => c.PostId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // ✅ Tags - Many to Many (PostTag)
             builder.HasMany(p => p.Tags)
                    .WithMany(t => t.Posts)
                    .UsingEntity<PostTag>(

@@ -76,7 +76,7 @@ namespace eBlog.API.Controllers
                 Id = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
-                Roles = user.UserRoles.Select(r => r.RoleName).ToList()
+                Roles = user.UserRoles.Select(r => r.Role.Name).ToList()
             };
 
             var newJwt = _jwtService.GenerateJwtToken(userDto);

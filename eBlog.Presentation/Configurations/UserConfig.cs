@@ -20,6 +20,9 @@ namespace eBlog.Persistence.Configurations
 
             builder.Property(u => u.PasswordHash)
                 .IsRequired();
+            builder.Property(u => u.PasswordResetToken).IsRequired(false);
+            builder.Property(u => u.ResetTokenExpires).IsRequired(false);
+            builder.Property(u => u.EmailVerificationToken).IsRequired(false);
 
             builder.HasMany(x => x.UserRoles)
                     .WithOne(x => x.User)

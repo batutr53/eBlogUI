@@ -9,6 +9,7 @@ using eBlog.Domain.Interfaces.DAO;
 using eBlog.Persistence.Contexts;
 using eBlog.Persistence.DAOs;
 using eBlog.Persistence.Repositories;
+using eBlog.Persistence.Seeders;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +29,14 @@ builder.Host.UseSerilog();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "eBlog API",
+        Version = "v1"
+    });
+});
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 // Repository ve UnitOfWork
@@ -68,7 +76,8 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICartDao, CartDao>();
 builder.Services.AddScoped<ICartService, CartService>();
-
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<RedisCacheHelper>();
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -101,14 +110,18 @@ builder.Services.AddAuthentication("Bearer")
 
 
 var app = builder.Build();
+await SeedData.InitializeAsync(app.Services);
 app.UseSerilogRequestLogging();
 app.UseMiddleware<ExceptionMiddleware>();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
     app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "eBlog API V1");
+        options.DocumentTitle = "eBlog API Docs";
+        options.DefaultModelsExpandDepth(-1); // Model listelerini gizler
+        options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None); // Collapse her þeyi
+    });
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

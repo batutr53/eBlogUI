@@ -11,8 +11,9 @@ namespace eBlog.Domain.Entities
         public decimal Price { get; set; }
         public int Stock { get; set; }
         public Guid SellerId { get; set; } // User
-        public string Slug { get; set; } = null!; // SEO için
+        public string? Slug { get; set; } = null!; // SEO için
         public Guid? SeoMetadataId { get; set; }
+        public Guid CategoryId { get; set; }
 
         // Kitap özel property'leri
         public string? Author { get; set; }
@@ -31,6 +32,7 @@ namespace eBlog.Domain.Entities
         public DateTime? DeletedAt { get; set; }
 
         // Navigation
+        public Category Category { get; set; } = null!;
         public User Seller { get; set; } = null!;
         public SeoMetadata? SeoMetadata { get; set; }
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
@@ -38,5 +40,7 @@ namespace eBlog.Domain.Entities
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
         public ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+        public ICollection<ProductOrder> Orders { get; set; }
+
     }
 }

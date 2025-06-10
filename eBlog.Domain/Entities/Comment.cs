@@ -11,11 +11,14 @@ namespace eBlog.Domain.Entities
         public Guid? PostId { get; set; }
         public Guid? BookId { get; set; }
         public Guid? ParentCommentId { get; set; } // Cevaplar için
-
+        public Guid ProductId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
+        public bool IsApproved { get; set; }
+        public string Text { get; set; } = string.Empty;
 
+        public bool IsActive { get; set; } = true;
         // Navigation
         public User User { get; set; } = null!;
         public Post? Post { get; set; }

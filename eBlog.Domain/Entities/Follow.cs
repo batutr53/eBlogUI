@@ -7,12 +7,13 @@ namespace eBlog.Domain.Entities
     public class Follow : BaseEntity
     {
         public Guid Id { get; set; }
-        public Guid FollowerId { get; set; }    // Takip eden
-        public Guid FollowingId { get; set; }   // Takip edilen
-        public DateTime CreatedAt { get; set; }
 
-        // Navigation
-        public User Follower { get; set; } = null!;
-        public User Following { get; set; } = null!;
+        public Guid FollowerId { get; set; }
+        public User Follower { get; set; }
+
+        public Guid FollowingId { get; set; }
+        public User Following { get; set; }
+
+        public DateTime FollowedAt { get; set; }
     }
 }

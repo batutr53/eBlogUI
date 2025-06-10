@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using eBlog.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using eBlog.Domain.Entities;
 
 namespace eBlog.Persistence.Configurations
 {
@@ -8,25 +8,21 @@ namespace eBlog.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<PostModule> builder)
         {
-            builder.HasKey(pm => pm.Id);
+            builder.HasKey(x => x.Id);
 
-            builder.Property(pm => pm.Type)
+            builder.Property(x => x.Type)
                    .IsRequired()
-                   .HasMaxLength(50); // e.g. Text, Image, Quote, etc.
+                   .HasMaxLength(50);
 
-            builder.Property(pm => pm.Content)
-                   .HasColumnType("text");
+            builder.Property(x => x.Content)
+                   .HasMaxLength(5000); // opsiyonel: content uzunluğu
 
-            builder.Property(pm => pm.Order)
+            builder.Property(x => x.Order)
                    .IsRequired();
 
-            builder.Property(pm => pm.MediaUrl)
-                   .HasMaxLength(500);
-
-            // ✅ Post - One to Many
-            builder.HasOne(pm => pm.Post)
-                   .WithMany(p => p.Modules)
-                   .HasForeignKey(pm => pm.PostId)
+            builder.HasOne(x => x.Post)
+                   .WithMany(p => p.PostModules)
+                   .HasForeignKey(x => x.PostId)
                    .OnDelete(DeleteBehavior.Cascade);
         }
     }

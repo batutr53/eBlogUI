@@ -7,6 +7,8 @@ namespace eBlog.Domain.Entities
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
+        public string Title { get; set; }
+
         public string Message { get; set; } = null!;
         public string? Link { get; set; } // Bildirim tıklanınca gidilecek yer
         public bool IsRead { get; set; } = false;

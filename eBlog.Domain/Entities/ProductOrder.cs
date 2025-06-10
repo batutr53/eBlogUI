@@ -11,8 +11,9 @@ namespace eBlog.Domain.Entities
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalPrice { get; set; }
-        public DateTime OrderedAt { get; set; }
+        public DateTime OrderDate { get; set; }
         public string Status { get; set; } = "pending"; // pending, paid, cancelled, shipped, completed
+        public DateTime OrderedAt { get; set; }
 
         // Navigation
         public User Buyer { get; set; } = null!;
