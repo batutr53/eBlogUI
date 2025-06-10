@@ -15,8 +15,9 @@ namespace eBlog.Persistence.Repositories
         public async Task<User> GetByIdWithRolesAsync(Guid userId)
         {
             return await _context.Users
-                .Include(u => u.UserRoles)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+              .Include(u => u.UserRoles)
+              .ThenInclude(ur => ur.Role) 
+              .FirstOrDefaultAsync(u => u.Id == userId);
         }
         public async Task<User> GetByResetTokenAsync(string resetToken)
         {

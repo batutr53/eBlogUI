@@ -11,12 +11,14 @@ namespace eBlog.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IJwtService _jwtService;
+        private readonly IJwtService _jwtService;   
+        private readonly IRoleService _roleService;
 
-        public AuthController(IUserService userService, IJwtService jwtService)
+        public AuthController(IUserService userService, IJwtService jwtService, IRoleService roleService)
         {
             _userService = userService;
             _jwtService = jwtService;
+            _roleService = roleService;
         }
 
         [HttpPost("register")]
@@ -25,6 +27,9 @@ namespace eBlog.API.Controllers
             var existingUser = await _userService.GetByEmailAsync(dto.Email);
             if (existingUser.Success && existingUser.Data != null)
                 return BadRequest(new { message = "Bu email zaten kayıtlı." });
+
+            // Artık rolü bulma veya oluşturma işini servise devrediyoruz.
+            await _roleService.FindOrCreateRoleByNameAsync("User");
 
             var userCreateDto = new UserCreateDto
             {
@@ -46,46 +51,52 @@ namespace eBlog.API.Controllers
         {
             var userResult = await _userService.GetByEmailAsync(dto.Email);
             if (!userResult.Success || userResult.Data == null)
-                return Unauthorized("Email veya şifre hatalı.");
+                return Unauthorized(new { message = "Email veya şifre hatalı." });
 
             var user = userResult.Data;
 
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-                return Unauthorized("Email veya şifre hatalı.");
+                return Unauthorized(new { message = "Email veya şifre hatalı." });
 
             var jwtToken = _jwtService.GenerateJwtToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
 
-            // Refresh token'ı veritabanına kaydet
-            await _userService.SaveRefreshTokenAsync(user.Id, refreshToken, Request.HttpContext.Connection.RemoteIpAddress.ToString());
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            await _userService.SaveRefreshTokenAsync(user.Id, refreshToken, ipAddress);
 
-            return Ok(new { token = jwtToken, refreshToken });
+            return Ok(new { token = jwtToken, refreshToken = refreshToken });
         }
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken(string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
             var user = await _userService.GetUserByRefreshTokenAsync(refreshToken);
             if (user == null)
-                return Unauthorized("Geçersiz refresh token.");
+                return Unauthorized(new { message = "Geçersiz refresh token." });
 
-            if (user.RefreshTokens.FirstOrDefault(rt => rt.Token == refreshToken)?.IsExpired ?? true)
-                return Unauthorized("Refresh token süresi dolmuş.");
+            var oldToken = user.RefreshTokens.FirstOrDefault(rt => rt.Token == refreshToken);
+
+            if (oldToken == null || oldToken.IsExpired)
+                return Unauthorized(new { message = "Refresh token süresi dolmuş veya geçersiz." });
+
+            var userRoles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
 
             var userDto = new UserDetailDto
             {
                 Id = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
-                Roles = user.UserRoles.Select(r => r.Role.Name).ToList()
+                Roles = userRoles
             };
 
             var newJwt = _jwtService.GenerateJwtToken(userDto);
             var newRefreshToken = _jwtService.GenerateRefreshToken();
 
-            await _userService.ReplaceRefreshTokenAsync(user.Id, refreshToken, newRefreshToken, HttpContext.Connection.RemoteIpAddress?.ToString());
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            await _userService.ReplaceRefreshTokenAsync(user.Id, refreshToken, newRefreshToken, ipAddress);
 
             return Ok(new { token = newJwt, refreshToken = newRefreshToken });
         }
+
         [HttpGet("verify-email")]
         public async Task<IActionResult> VerifyEmail(string token)
         {

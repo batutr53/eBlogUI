@@ -9,5 +9,7 @@ namespace eBlog.Application.Interfaces
         Task<RoleDto?> GetByIdAsync(Guid id);
         Task<RoleDto?> GetByNameAsync(string name);
         Task<IResult> AddAsync(RoleCreateDto dto);
+        Task<IDataResult<RoleDto>> FindOrCreateRoleByNameAsync(string roleName);
+
     }
 }

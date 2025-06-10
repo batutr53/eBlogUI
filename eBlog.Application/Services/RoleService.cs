@@ -48,6 +48,19 @@ namespace eBlog.Application.Services
             await _unitOfWork.SaveChangesAsync();
             return new SuccessResult("Rol eklendi.");
         }
+
+        public async Task<IDataResult<RoleDto>> FindOrCreateRoleByNameAsync(string roleName)
+        {
+            var role = await _roleRepository.GetByNameAsync(roleName);
+            if (role == null)
+            {
+                role = new Role { Name = roleName };
+                await _roleRepository.AddAsync(role);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            var roleDto = _mapper.Map<RoleDto>(role);
+            return new SuccessDataResult<RoleDto>(roleDto, "Rol bulundu veya oluşturuldu.");
+        }
     }
 
 }
