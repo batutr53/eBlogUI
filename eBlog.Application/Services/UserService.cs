@@ -186,10 +186,36 @@ namespace eBlog.Application.Services
             return new SuccessResult("Refresh token kaydedildi.");
         }
 
-     
-       
+        public async Task<User> GetUserByRefreshTokenAsync(string refreshToken)
+        {
+            return await _userRepository.GetByRefreshTokenAsync(refreshToken);
+        }
 
-     
+        public async Task<IResult> ReplaceRefreshTokenAsync(Guid userId, string oldToken, string newToken, string ipAddress)
+        {
+            var user = await _userRepository.GetByIdWithRefreshTokensAsync(userId);
+            var oldRefreshToken = user?.RefreshTokens.FirstOrDefault(rt => rt.Token == oldToken);
+
+            if (oldRefreshToken == null)
+                return new ErrorResult("Eski refresh token bulunamadı.");
+
+            user.RefreshTokens.Remove(oldRefreshToken);
+            user.RefreshTokens.Add(new RefreshToken
+            {
+                UserId = userId,
+                Token = newToken,
+                Expires = DateTime.UtcNow.AddDays(7),
+                Created = DateTime.UtcNow,
+                CreatedByIp = ipAddress
+            });
+
+            await _unitOfWork.SaveChangesAsync();
+            return new SuccessResult("Refresh token güncellendi.");
+        }
+
+
+
+
 
     }
 }

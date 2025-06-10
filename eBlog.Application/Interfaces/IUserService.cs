@@ -17,6 +17,8 @@ namespace eBlog.Application.Interfaces
         Task<IResult> GeneratePasswordResetTokenAsync(string email);
         Task<IResult> ResetPasswordAsync(string token, string newPassword);
         Task<IResult> VerifyEmailAsync(string token);
+        Task<User> GetUserByRefreshTokenAsync(string refreshToken);
+        Task<IResult> ReplaceRefreshTokenAsync(Guid userId, string oldToken, string newToken, string ipAddress);
 
     }
 }

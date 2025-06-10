@@ -61,6 +61,38 @@ namespace eBlog.API.Controllers
 
             return Ok(new { token = jwtToken, refreshToken });
         }
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(string refreshToken)
+        {
+            var user = await _userService.GetUserByRefreshTokenAsync(refreshToken);
+            if (user == null)
+                return Unauthorized("Geçersiz refresh token.");
 
+            if (user.RefreshTokens.FirstOrDefault(rt => rt.Token == refreshToken)?.IsExpired ?? true)
+                return Unauthorized("Refresh token süresi dolmuş.");
+
+            var userDto = new UserDetailDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                Roles = user.UserRoles.Select(r => r.RoleName).ToList()
+            };
+
+            var newJwt = _jwtService.GenerateJwtToken(userDto);
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            await _userService.ReplaceRefreshTokenAsync(user.Id, refreshToken, newRefreshToken, HttpContext.Connection.RemoteIpAddress?.ToString());
+
+            return Ok(new { token = newJwt, refreshToken = newRefreshToken });
+        }
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmail(string token)
+        {
+            var result = await _userService.VerifyEmailAsync(token);
+            if (!result.Success)
+                return BadRequest(result);
+            return Ok(result);
+        }
     }
 }

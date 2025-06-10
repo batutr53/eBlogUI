@@ -27,6 +27,20 @@ namespace eBlog.Persistence.Repositories
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.EmailVerificationToken == token);
         }
+        public async Task<User> GetByRefreshTokenAsync(string refreshToken)
+        {
+            return await _context.Users
+                .Include(u => u.RefreshTokens)
+                .Include(u => u.UserRoles)
+                .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == refreshToken));
+        }
+
+        public async Task<User> GetByIdWithRefreshTokensAsync(Guid userId)
+        {
+            return await _context.Users
+                .Include(u => u.RefreshTokens)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+        }
 
     }
 }

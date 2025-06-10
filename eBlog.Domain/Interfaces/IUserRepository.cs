@@ -8,5 +8,7 @@ namespace eBlog.Domain.Interfaces
         Task<User> GetByIdWithRolesAsync(Guid userId);
         Task<User> GetByResetTokenAsync(string resetToken);
         Task<User> GetByEmailVerificationTokenAsync(string token);
+        Task<User> GetByRefreshTokenAsync(string refreshToken);
+        Task<User> GetByIdWithRefreshTokensAsync(Guid userId);
     }
 }

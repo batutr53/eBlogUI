@@ -1,4 +1,5 @@
 using eBlog.API.Middlewares;
+using eBlog.Application.Helpers;
 using eBlog.Application.Interfaces;
 using eBlog.Application.Mappers;
 using eBlog.Application.Services;
@@ -12,9 +13,15 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/eBlog-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog();
 
 // Add services to the container.
 
@@ -63,7 +70,12 @@ builder.Services.AddScoped<ICartDao, CartDao>();
 builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
-
+builder.Services.AddScoped<RedisCacheHelper>();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "eBlog:"; // Redis'teki ön ek
+});
 
 builder.Services.AddFluentValidationAutoValidation()
                 .AddFluentValidationClientsideAdapters();
@@ -89,6 +101,7 @@ builder.Services.AddAuthentication("Bearer")
 
 
 var app = builder.Build();
+app.UseSerilogRequestLogging();
 app.UseMiddleware<ExceptionMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
