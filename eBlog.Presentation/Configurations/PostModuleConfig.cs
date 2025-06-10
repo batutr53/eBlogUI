@@ -1,11 +1,6 @@
-﻿using eBlog.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using eBlog.Domain.Entities;
 
 namespace eBlog.Persistence.Configurations
 {
@@ -13,12 +8,26 @@ namespace eBlog.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<PostModule> builder)
         {
-            builder.HasOne(p => p.Post)
-                   .WithMany(p => p.PostModules)
-                   .HasForeignKey(p => p.PostId);
+            builder.HasKey(pm => pm.Id);
 
-            builder.Property(p => p.Type).IsRequired();
-            builder.Property(p => p.Order).IsRequired();
+            builder.Property(pm => pm.Type)
+                   .IsRequired()
+                   .HasMaxLength(50); // e.g. Text, Image, Quote, etc.
+
+            builder.Property(pm => pm.Content)
+                   .HasColumnType("text");
+
+            builder.Property(pm => pm.Order)
+                   .IsRequired();
+
+            builder.Property(pm => pm.MediaUrl)
+                   .HasMaxLength(500);
+
+            // ✅ Post - One to Many
+            builder.HasOne(pm => pm.Post)
+                   .WithMany(p => p.Modules)
+                   .HasForeignKey(pm => pm.PostId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

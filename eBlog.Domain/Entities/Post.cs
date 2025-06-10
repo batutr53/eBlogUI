@@ -25,7 +25,9 @@ namespace eBlog.Domain.Entities
         public DateTime? UpdatedAt { get; set; }
         public DateTime? DeletedAt { get; set; }
 
-        // Navigation
+        public Guid UserId { get; set; }            // Foreign key
+
+        public User User { get; set; }
         public User Author { get; set; } = null!;
         public Category Category { get; set; } = null!;
         public SeoMetadata? SeoMetadata { get; set; }
@@ -33,7 +35,9 @@ namespace eBlog.Domain.Entities
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<Like> Likes { get; set; } = new List<Like>();
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
-        public ICollection<PostModule> PostModules { get; set; } = new List<PostModule>();
+        public ICollection<PostModule> Modules { get; set; } = new List<PostModule>();
+        public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+
 
     }
 }

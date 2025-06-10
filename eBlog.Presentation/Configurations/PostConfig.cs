@@ -1,46 +1,67 @@
-﻿using eBlog.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using eBlog.Domain.Entities;
 
 namespace eBlog.Persistence.Configurations
 {
-
     public class PostConfig : IEntityTypeConfiguration<Post>
     {
         public void Configure(EntityTypeBuilder<Post> builder)
         {
-            builder.HasKey(x => x.Id);
-            builder.Property(x => x.Title).IsRequired().HasMaxLength(300);
-            builder.Property(x => x.Slug).IsRequired().HasMaxLength(300);
+            builder.HasKey(p => p.Id);
 
-            builder.HasOne(x => x.Author)
-                .WithMany(u => u.Posts)
-                .HasForeignKey(x => x.AuthorId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(p => p.Title)
+                .IsRequired()
+                .HasMaxLength(200);
 
-            builder.HasOne(x => x.Category)
-                .WithMany(c => c.Posts)
-                .HasForeignKey(x => x.CategoryId);
+            builder.Property(p => p.Slug)
+                .IsRequired()
+                .HasMaxLength(200);
 
-            builder.HasOne(x => x.SeoMetadata)
-                .WithMany(m => m.Posts)
-                .HasForeignKey(x => x.SeoMetadataId)
-                .OnDelete(DeleteBehavior.SetNull);
+            builder.Property(p => p.CreatedAt)
+                .HasDefaultValueSql("NOW()");
 
-            builder.HasMany(x => x.Comments)
-                .WithOne(c => c.Post)
-                .HasForeignKey(c => c.PostId);
+            builder.Property(p => p.IsPublished)
+                .HasDefaultValue(false);
 
-            builder.HasMany(x => x.Likes)
-                .WithOne(l => l.Post)
-                .HasForeignKey(l => l.PostId);
+            builder.HasIndex(p => p.Slug)
+                .IsUnique();
 
-            builder.HasMany(x => x.Favorites)
-                .WithOne(f => f.Post)
-                .HasForeignKey(f => f.PostId);
+            // ✅ User - One to Many
+            builder.HasOne(p => p.User)
+                   .WithMany(u => u.Posts)
+                   .HasForeignKey(p => p.UserId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
-            // Çoklu dil için index
-            builder.HasIndex(x => x.LanguageCode);
+            // ✅ Category - One to Many
+            builder.HasOne(p => p.Category)
+                   .WithMany(c => c.Posts)
+                   .HasForeignKey(p => p.CategoryId)
+                   .OnDelete(DeleteBehavior.SetNull);
+
+            // ✅ PostModules - One to Many
+            builder.HasMany(p => p.Modules)
+                   .WithOne(m => m.Post)
+                   .HasForeignKey(m => m.PostId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // ✅ Comments - One to Many
+            builder.HasMany(p => p.Comments)
+                   .WithOne(c => c.Post)
+                   .HasForeignKey(c => c.PostId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // ✅ Tags - Many to Many (PostTag)
+            builder.HasMany(p => p.Tags)
+                   .WithMany(t => t.Posts)
+                   .UsingEntity<PostTag>(
+                       j => j.HasOne(pt => pt.Tag).WithMany().HasForeignKey(pt => pt.TagId),
+                       j => j.HasOne(pt => pt.Post).WithMany().HasForeignKey(pt => pt.PostId),
+                       j =>
+                       {
+                           j.HasKey(pt => new { pt.PostId, pt.TagId });
+                           j.ToTable("PostTags");
+                       });
         }
     }
 }

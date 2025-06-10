@@ -21,10 +21,13 @@ namespace eBlog.Persistence.Configurations
             builder.Property(u => u.PasswordHash)
                 .IsRequired();
 
-            builder.HasMany(u => u.UserRoles)
-                .WithOne(r => r.User)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(x => x.UserRoles)
+                    .WithOne(x => x.User)
+                    .HasForeignKey(x => x.UserId);
+
+            builder.HasMany(x => x.Posts)
+                   .WithOne(x => x.User)
+                   .HasForeignKey(x => x.UserId);
 
         }
     }

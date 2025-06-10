@@ -13,6 +13,7 @@ namespace eBlog.Domain.Entities
         public string LanguageCode { get; set; } = "tr";
 
         public ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
+        public ICollection<Post> Posts { get; set; } = new List<Post>();
     }
 
 }
