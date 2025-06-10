@@ -1,9 +1,10 @@
-﻿using eBlog.Domain.Interfaces;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Interfaces;
 
 namespace eBlog.Domain.Entities
 {
 
-    public class Post : IEntity, IAuditableEntity
+    public class Post : BaseEntity
     {
         public Guid Id { get; set; }
         public string Title { get; set; } = null!;
@@ -32,5 +33,7 @@ namespace eBlog.Domain.Entities
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<Like> Likes { get; set; } = new List<Like>();
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+        public ICollection<PostModule> PostModules { get; set; } = new List<PostModule>();
+
     }
 }

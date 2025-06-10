@@ -1,8 +1,9 @@
-﻿using eBlog.Domain.Interfaces;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Interfaces;
 
 namespace eBlog.Domain.Entities
 {
-    public class Comment : IEntity, IAuditableEntity
+    public class Comment : BaseEntity
     {
         public Guid Id { get; set; }
         public string Content { get; set; } = null!;

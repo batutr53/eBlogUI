@@ -1,8 +1,9 @@
-﻿using eBlog.Domain.Interfaces;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Interfaces;
 
 namespace eBlog.Domain.Entities
 {
-    public class ProductOrder : IEntity
+    public class ProductOrder : BaseEntity
     {
         public Guid Id { get; set; }
         public Guid BuyerId { get; set; }

@@ -1,8 +1,9 @@
-﻿using eBlog.Domain.Interfaces;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Interfaces;
 
 namespace eBlog.Domain.Entities
 {
-    public class Cart : IEntity
+    public class Cart : BaseEntity
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }

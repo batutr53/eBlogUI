@@ -1,4 +1,5 @@
-﻿using eBlog.Domain.Entities;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,20 @@ namespace eBlog.Persistence.Contexts
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<SeoMetadata> SeoMetadatas => Set<SeoMetadata>();
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var entries = ChangeTracker.Entries<BaseEntity>();
+
+            foreach (var entry in entries)
+            {
+                if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedAt = DateTime.UtcNow;
+                }
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

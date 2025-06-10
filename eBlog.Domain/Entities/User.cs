@@ -1,9 +1,10 @@
-﻿using eBlog.Domain.Interfaces;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Interfaces;
 
 namespace eBlog.Domain.Entities
 {
 
-    public class User : IEntity, IAuditableEntity
+    public class User : BaseEntity
     {
         public Guid Id { get; set; }
         public string UserName { get; set; } = null!;

@@ -1,9 +1,10 @@
-﻿using eBlog.Domain.Interfaces;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Interfaces;
 
 namespace eBlog.Domain.Entities
 {
 
-    public class Category : IEntity
+    public class Category : BaseEntity
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = null!;

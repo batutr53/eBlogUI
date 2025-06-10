@@ -1,9 +1,10 @@
-﻿using eBlog.Domain.Interfaces;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Interfaces;
 
 namespace eBlog.Domain.Entities
 {
 
-    public class Follow : IEntity
+    public class Follow : BaseEntity
     {
         public Guid Id { get; set; }
         public Guid FollowerId { get; set; }    // Takip eden

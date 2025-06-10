@@ -73,6 +73,9 @@ namespace eBlog.Application.Mappers
                 .ForMember(dest => dest.FollowingUserName, opt => opt.MapFrom(src => src.Following.UserName));
 
             CreateMap<FollowCreateDto, Follow>();
+
+            CreateMap<PostModule, PostModuleDto>().ReverseMap();
+            CreateMap<Post, PostWithModulesDto>().ReverseMap();
         }
     }
 }
