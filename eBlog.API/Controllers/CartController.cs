@@ -1,5 +1,7 @@
 ﻿using eBlog.Application.DTOs;
+using eBlog.Application.Extensions;
 using eBlog.Application.Interfaces;
+using eBlog.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eBlog.API.Controllers
@@ -13,8 +15,39 @@ namespace eBlog.API.Controllers
         {
             _service = service;
         }
-
         [HttpGet]
+        public async Task<IActionResult> Get()
+        {
+            var userId = User.GetUserId(); // extension method varsa
+            var result = await _service.GetCartItemsAsync(userId);
+            return Ok(result);
+        }
+
+        [HttpPost("add")]
+        public async Task<IActionResult> Add(AddToCartDto dto)
+        {
+            var userId = User.GetUserId();
+            var result = await _service.AddToCartAsync(userId, dto);
+            return Ok(result);
+        }
+
+        [HttpDelete("{productId}")]
+        public async Task<IActionResult> Remove(Guid productId)
+        {
+            var userId = User.GetUserId();
+            var result = await _service.RemoveFromCartAsync(userId, productId);
+            return Ok(result);
+        }
+
+        [HttpDelete("clear")]
+        public async Task<IActionResult> Clear()
+        {
+            var userId = User.GetUserId();
+            var result = await _service.ClearCartAsync(userId);
+            return Ok(result);
+        }
+
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _service.GetAllAsync();
@@ -32,7 +65,7 @@ namespace eBlog.API.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CartDto dto)
         {
             var result = await _service.AddAsync(dto);

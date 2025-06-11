@@ -51,6 +51,14 @@ namespace eBlog.Application.Mappers
     .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
     .ForMember(dest => dest.BuyerUserName, opt => opt.MapFrom(src => src.Buyer.UserName));
             CreateMap<ProductOrderCreateDto, ProductOrder>();
+            CreateMap<ProductOrder, ProductOrderListDto>()
+    .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+    .ForMember(dest => dest.BuyerEmail, opt => opt.MapFrom(src => src.Buyer.Email));
+
+            CreateMap<ProductOrderCreateDto, ProductOrder>()
+                .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => "pending"))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.UnitPrice * src.Quantity));
 
             CreateMap<Cart, CartDto>();
             CreateMap<CartItem, CartItemDto>()

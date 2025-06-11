@@ -1,4 +1,5 @@
-﻿using eBlog.Domain.Entities;
+﻿using eBlog.Domain.Common;
+using eBlog.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,25 +9,38 @@ namespace eBlog.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<ProductOrder> builder)
         {
-            builder.HasKey(x => x.Id);
+            builder.HasKey(o => o.Id);
 
-            builder.Property(x => x.Quantity)
+            builder.Property(o => o.Quantity)
                    .IsRequired();
 
-            builder.Property(x => x.TotalPrice)
+            builder.Property(o => o.UnitPrice)
                    .IsRequired()
                    .HasColumnType("decimal(18,2)");
 
-            builder.Property(x => x.OrderedAt)
+            builder.Property(o => o.TotalPrice)
+                   .IsRequired()
+                   .HasColumnType("decimal(18,2)");
+
+            builder.Property(o => o.OrderDate)
                    .IsRequired();
 
-            builder.HasOne(x => x.Buyer)
-                   .WithMany(u => u.ProductOrders)
-                   .HasForeignKey(x => x.BuyerId);
+            builder.Property(o => o.OrderedAt)
+                   .HasDefaultValueSql("NOW()");
 
-            builder.HasOne(x => x.Product)
-                   .WithMany(p => p.Orders)
-                   .HasForeignKey(x => x.ProductId);
+            builder.Property(o => o.Status)
+                   .IsRequired()
+                   .HasMaxLength(20);
+
+            builder.HasOne(o => o.Buyer)
+                   .WithMany(u => u.ProductOrders)
+                   .HasForeignKey(o => o.BuyerId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(o => o.Product)
+                   .WithMany(p => p.ProductOrders)
+                   .HasForeignKey(o => o.ProductId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -5,6 +5,6 @@ namespace eBlog.Domain.Interfaces
     public interface ICartRepository : IGenericRepository<Cart>
     {
         Task<Cart?> GetCartByUserIdAsync(Guid userId);
-        // Sepete özel ekstra metotlar
+        Task<Cart?> GetByUserIdWithItemsAsync(Guid userId);
     }
 }

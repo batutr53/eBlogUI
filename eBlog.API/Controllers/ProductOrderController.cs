@@ -1,5 +1,7 @@
 ﻿using eBlog.Application.DTOs;
+using eBlog.Application.Extensions;
 using eBlog.Application.Interfaces;
+using eBlog.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eBlog.API.Controllers
@@ -35,11 +37,23 @@ namespace eBlog.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ProductOrderCreateDto dto)
         {
+            var buyerId = User.GetUserId();
+            if (buyerId == Guid.Empty)
+                return Unauthorized("Kullanıcı oturumu geçersiz.");
+
+            dto.BuyerId = buyerId;
+            dto.TotalPrice = dto.UnitPrice * dto.Quantity;
+            dto.OrderedAt = DateTime.UtcNow;
+            dto.Status = "pending";
+            dto.OrderDate = DateTime.UtcNow;
+
             var result = await _service.AddAsync(dto);
             if (!result.Success)
                 return BadRequest(result);
             return CreatedAtAction(nameof(GetById), new { id = ((dynamic)result.Data).Id }, result);
         }
+
+
 
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ProductOrderCreateDto dto)

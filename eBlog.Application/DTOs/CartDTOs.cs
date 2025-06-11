@@ -5,7 +5,11 @@
         public Guid Id { get; set; }
         public List<CartItemDto> Items { get; set; } = new();
     }
-
+    public class AddToCartDto
+    {
+        public Guid ProductId { get; set; }
+        public int Quantity { get; set; }
+    }
     public class CartItemDto
     {
         public Guid Id { get; set; }

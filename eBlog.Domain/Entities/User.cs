@@ -24,18 +24,18 @@ namespace eBlog.Domain.Entities
         public DateTime? DeletedAt { get; set; }
 
         // Navigation
-        public Cart Cart { get; set; }
-        public ICollection<Notification> Notifications { get; set; }
-        public ICollection<Favorite> Favorites { get; set; }
+        public Cart Cart { get; set; } = null!;
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+        public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
         public ICollection<Post> Posts { get; set; } = new List<Post>();
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<Product> Product { get; set; } = new List<Product>();
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
-        public ICollection<Follow> Followers { get; set; }
-        public ICollection<Follow> Following { get; set; }
-        public ICollection<ProductOrder> Orders { get; set; }
-        public ICollection<ProductOrder> ProductOrders { get; set; }
+        public ICollection<Follow> Followers { get; set; } = new List<Follow>();
+        public ICollection<Follow> Following { get; set; } = new List<Follow>();
+        public ICollection<ProductOrder> Orders { get; set; } = new List<ProductOrder>();
+        public ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
 
 
 

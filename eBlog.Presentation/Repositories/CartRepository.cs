@@ -12,5 +12,14 @@ namespace eBlog.Persistence.Repositories
         public async Task<Cart?> GetCartByUserIdAsync(Guid userId)
             => await _dbSet.Include(x => x.CartItems).ThenInclude(ci => ci.Product)
                            .FirstOrDefaultAsync(x => x.UserId == userId);
+
+        public Task<Cart?> GetByUserIdWithItemsAsync(Guid userId)
+        {
+            return _context.Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+        }
+
     }
 }

@@ -34,13 +34,13 @@ namespace eBlog.Domain.Entities
         // Navigation
         public Category Category { get; set; } = null!;
         public User Seller { get; set; } = null!;
-        public SeoMetadata? SeoMetadata { get; set; }
+        public SeoMetadata? SeoMetadata { get; set; } = null!;
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<Like> Likes { get; set; } = new List<Like>();
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
         public ICollection<ProductOrder> ProductOrders { get; set; } = new List<ProductOrder>();
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
-        public ICollection<ProductOrder> Orders { get; set; }
+        public ICollection<ProductOrder> Orders { get; set; } = new List<ProductOrder>();
 
     }
 }

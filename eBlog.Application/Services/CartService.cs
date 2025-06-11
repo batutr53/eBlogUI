@@ -57,5 +57,74 @@ namespace eBlog.Application.Services
                 return new ErrorDataResult<decimal>("Toplam sepet tutarı hesaplanamadı: " + ex.Message);
             }
         }
+
+        public async Task<IResult> AddToCartAsync(Guid userId, AddToCartDto dto)
+        {
+            var cart = await _cartRepository.GetByUserIdWithItemsAsync(userId);
+            if (cart == null)
+            {
+                cart = new Cart { UserId = userId };
+                await _cartRepository.AddAsync(cart);
+            }
+
+            var existingItem = cart.CartItems.FirstOrDefault(x => x.ProductId == dto.ProductId);
+            if (existingItem != null)
+            {
+                existingItem.Quantity += dto.Quantity;
+            }
+            else
+            {
+                cart.CartItems.Add(new CartItem
+                {
+                    ProductId = dto.ProductId,
+                    Quantity = dto.Quantity
+                });
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return new SuccessResult("Ürün sepete eklendi.");
+        }
+
+        public async Task<IDataResult<List<CartItemDto>>> GetCartItemsAsync(Guid userId)
+        {
+            var cart = await _cartRepository.GetByUserIdWithItemsAsync(userId);
+            if (cart == null || !cart.CartItems.Any())
+                return new SuccessDataResult<List<CartItemDto>>(new List<CartItemDto>(), "Sepet boş.");
+
+            var items = cart.CartItems.Select(i => new CartItemDto
+            {
+                ProductId = i.ProductId,
+                Quantity = i.Quantity,
+                ProductName = i.Product.Name,
+                UnitPrice = i.Product.Price
+            }).ToList();
+
+            return new SuccessDataResult<List<CartItemDto>>(items);
+        }
+
+        public async Task<IResult> RemoveFromCartAsync(Guid userId, Guid productId)
+        {
+            var cart = await _cartRepository.GetByUserIdWithItemsAsync(userId);
+            if (cart == null) return new ErrorResult("Sepet bulunamadı.");
+
+            var item = cart.CartItems.FirstOrDefault(i => i.ProductId == productId);
+            if (item == null) return new ErrorResult("Ürün sepette yok.");
+
+            cart.CartItems.Remove(item);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new SuccessResult("Ürün sepetten çıkarıldı.");
+        }
+
+        public async Task<IResult> ClearCartAsync(Guid userId)
+        {
+            var cart = await _cartRepository.GetByUserIdWithItemsAsync(userId);
+            if (cart == null) return new ErrorResult("Sepet bulunamadı.");
+
+            cart.CartItems.Clear();
+            await _unitOfWork.SaveChangesAsync();
+
+            return new SuccessResult("Sepet temizlendi.");
+        }
     }
 }
