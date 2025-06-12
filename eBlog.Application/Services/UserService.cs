@@ -16,19 +16,23 @@ namespace eBlog.Application.Services
         private readonly IUserDao _userDao;
         private readonly IMapper _mapper;
         private readonly IRoleRepository _roleRepository;
+
         public UserService(
             IUserRepository userRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IUserDao userDao
-,
-            IJwtService jwtService) : base(userRepository, unitOfWork, mapper)
+            IUserDao userDao,
+            IJwtService jwtService,
+            IRoleRepository roleRepository
+        ) : base(userRepository, unitOfWork, mapper)
         {
             _userRepository = userRepository;
             _userDao = userDao;
             _mapper = mapper;
             _jwtService = jwtService;
+            _roleRepository = roleRepository;
         }
+
         public async Task<IResult> AddRoleToUserAsync(UserRoleUpdateDto dto)
         {
             var user = await _userRepository.GetByIdWithRolesAsync(dto.UserId);
@@ -52,7 +56,6 @@ namespace eBlog.Application.Services
             return new SuccessResult("Rol başarıyla eklendi.");
         }
 
-
         public async Task<IResult> RemoveRoleFromUserAsync(UserRoleUpdateDto dto)
         {
             var user = await _userRepository.GetByIdWithRolesAsync(dto.UserId);
@@ -68,7 +71,6 @@ namespace eBlog.Application.Services
 
             return new SuccessResult("Rol kaldırıldı.");
         }
-
 
         public async Task<IDataResult<UserDetailDto>> GetByEmailAsync(string email)
         {
@@ -119,7 +121,6 @@ namespace eBlog.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
-            // UserDetailDto oluştur
             var userDto = new UserDetailDto
             {
                 Id = user.Id,
@@ -133,7 +134,6 @@ namespace eBlog.Application.Services
             return new SuccessDataResult<string>(jwtToken, "Roller güncellendi, JWT oluşturuldu.");
         }
 
-        // Şifre yenileme için token oluşturma
         public async Task<IResult> GeneratePasswordResetTokenAsync(string email)
         {
             var user = await _userRepository.GetByEmailAsync(email);
@@ -145,29 +145,23 @@ namespace eBlog.Application.Services
             user.ResetTokenExpires = DateTime.UtcNow.AddHours(1);
 
             await _unitOfWork.SaveChangesAsync();
-
-            // E-posta gönderme işlemi burada yapılır
-            // SendEmail(user.Email, resetToken);
-
             return new SuccessResult("Şifre yenileme linki e-postanıza gönderildi.");
         }
 
-        // Şifreyi yenile
         public async Task<IResult> ResetPasswordAsync(string token, string newPassword)
         {
             var user = await _userRepository.GetByResetTokenAsync(token);
             if (user == null || user.ResetTokenExpires < DateTime.UtcNow)
-                return new ErrorResult("Geçersiz veya süresi dolmuş token.");
+                return new ErrorResult("Geçersiz veya süre dolmuş token.");
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             user.PasswordResetToken = null;
             user.ResetTokenExpires = null;
 
             await _unitOfWork.SaveChangesAsync();
-
             return new SuccessResult("Şifre başarıyla yenilendi.");
         }
-        // Email doğrulama metodu (UserService içinde)
+
         public async Task<IResult> VerifyEmailAsync(string token)
         {
             var user = await _userRepository.GetByEmailVerificationTokenAsync(token);
@@ -180,6 +174,7 @@ namespace eBlog.Application.Services
 
             return new SuccessResult("E-posta başarıyla doğrulandı.");
         }
+
         public async Task<IResult> SaveRefreshTokenAsync(Guid userId, string refreshToken, string ipAddress)
         {
             var user = await _userRepository.GetByIdAsync(userId);
@@ -192,7 +187,6 @@ namespace eBlog.Application.Services
                 Token = refreshToken,
                 Expires = DateTime.UtcNow.AddDays(7),
                 Created = DateTime.UtcNow,
-                CreatedByIp = ipAddress
             };
 
             user.RefreshTokens.Add(token);
@@ -221,16 +215,10 @@ namespace eBlog.Application.Services
                 Token = newToken,
                 Expires = DateTime.UtcNow.AddDays(7),
                 Created = DateTime.UtcNow,
-                CreatedByIp = ipAddress
             });
 
             await _unitOfWork.SaveChangesAsync();
             return new SuccessResult("Refresh token güncellendi.");
         }
-
-
-
-
-
     }
 }

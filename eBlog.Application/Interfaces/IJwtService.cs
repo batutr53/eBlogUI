@@ -1,4 +1,5 @@
 ﻿using eBlog.Application.DTOs;
+using System.Security.Claims;
 
 namespace eBlog.Application.Interfaces
 {
@@ -6,6 +7,8 @@ namespace eBlog.Application.Interfaces
     {
         string GenerateJwtToken(UserDetailDto user);
         string GenerateRefreshToken();
+        ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
+
 
     }
 }

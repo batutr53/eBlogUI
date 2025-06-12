@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using eBlog.Application.DTOs;
+using eBlog.Application.DTOs.Dashboard;
 using eBlog.Domain.Entities;
+using eBlog.Domain.Models;
+using eBlog.Domain.Models.Dashboard;
 
 namespace eBlog.Application.Mappers
 {
@@ -29,8 +32,11 @@ namespace eBlog.Application.Mappers
     .ForMember(dest => dest.AuthorUserName, opt => opt.MapFrom(src => src.Author.UserName));
             CreateMap<Post, PostDetailDto>()
                 .ForMember(dest => dest.AuthorUserName, opt => opt.MapFrom(src => src.Author.UserName))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
-            CreateMap<PostCreateDto, Post>();
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
+                    .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata)); ;
+            CreateMap<PostCreateDto, Post>()
+    .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata));
+
             CreateMap<PostUpdateDto, Post>();
 
             CreateMap<Category, CategoryListDto>();
@@ -49,11 +55,9 @@ namespace eBlog.Application.Mappers
 
             CreateMap<ProductOrder, ProductOrderListDto>()
     .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
-    .ForMember(dest => dest.BuyerUserName, opt => opt.MapFrom(src => src.Buyer.UserName));
+    .ForMember(dest => dest.BuyerUserName, opt => opt.MapFrom(src => src.Buyer.UserName))
+        .ForMember(dest => dest.BuyerEmail, opt => opt.MapFrom(src => src.Buyer.Email));
             CreateMap<ProductOrderCreateDto, ProductOrder>();
-            CreateMap<ProductOrder, ProductOrderListDto>()
-    .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
-    .ForMember(dest => dest.BuyerEmail, opt => opt.MapFrom(src => src.Buyer.Email));
 
             CreateMap<ProductOrderCreateDto, ProductOrder>()
                 .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
@@ -81,6 +85,26 @@ namespace eBlog.Application.Mappers
                 .ForMember(dest => dest.FollowingUserName, opt => opt.MapFrom(src => src.Following.UserName));
 
             CreateMap<FollowCreateDto, Follow>();
+            CreateMap<DashboardTotals, DashboardTotalsDto>();
+
+            CreateMap<TopLikedPost, TopLikedPostDto>().ReverseMap();
+            CreateMap<DashboardTotals, DashboardTotalsDto>().ReverseMap();
+            CreateMap<TopSellingProduct, TopSellingProductDto>().ReverseMap();
+            CreateMap<TopCommentedPost, TopCommentedPostDto>().ReverseMap();
+            CreateMap<TopBuyer, TopBuyerDto>().ReverseMap();
+            CreateMap<TopRatedProduct, TopRatedProductDto>().ReverseMap();
+            CreateMap<OrderStatusCount, OrderStatusCountDto>().ReverseMap();
+            CreateMap<UserGrowthStat, UserGrowthStatDto>().ReverseMap();
+            CreateMap<CategoryDistribution, CategoryDistributionDto>().ReverseMap();
+            CreateMap<ActiveAuthor, ActiveAuthorDto>().ReverseMap();
+            CreateMap<PostModuleUsage, PostModuleUsageDto>().ReverseMap();
+            CreateMap<CouponUsage, CouponUsageDto>().ReverseMap();
+            CreateMap<LoginActivity, LoginActivityDto>().ReverseMap();
+            CreateMap<ErrorLogCount, ErrorLogCountDto>().ReverseMap();
+            CreateMap<HourlyTraffic, HourlyTrafficDto>().ReverseMap();
+            CreateMap<TagUsage, TagUsageDto>().ReverseMap();
+            CreateMap<PersonalSummary, PersonalSummaryDto>().ReverseMap();
+
 
             CreateMap<PostModule, PostModuleDto>().ReverseMap();
             CreateMap<Post, PostWithModulesDto>().ReverseMap();

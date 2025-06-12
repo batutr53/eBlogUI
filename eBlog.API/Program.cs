@@ -14,7 +14,9 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Reflection;
 using System.Text;
 
 Log.Logger = new LoggerConfiguration()
@@ -26,16 +28,53 @@ builder.Host.UseSerilog();
 
 // Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers()
+    .AddFluentValidation(cfg =>
+    {
+        cfg.RegisterValidatorsFromAssemblyContaining<IAssemblyMarker>();
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "eBlog API",
-        Version = "v1"
+        Version = "v1",
+        Description = "Geliþmiþ eBlog API dokümantasyonu",
+        Contact = new OpenApiContact
+        {
+            Name = "Batuhan Türk",
+            Email = "batuhanturk34@gmail.com"
+        }
     });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT token'ý giriniz. Örnek: Bearer {token}"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -49,6 +88,9 @@ builder.Services.AddScoped(typeof(IGenericService<,,,>), typeof(GenericService<,
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductDao, ProductDao>();
+builder.Services.AddScoped<IProductOrderRepository, ProductOrderRepository>();
+builder.Services.AddScoped<IProductOrderService, ProductOrderService>();
+builder.Services.AddScoped<IProductOrderDao, ProductOrderDao>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IPostDao, PostDao>();
 builder.Services.AddScoped<IPostService, PostService>();
@@ -79,6 +121,11 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.AddScoped<IAdminDashboardDao, AdminDashboardDao>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+
+
 builder.Services.AddScoped<RedisCacheHelper>();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -92,6 +139,11 @@ builder.Services.AddFluentValidationAutoValidation()
 builder.Services.AddValidatorsFromAssemblyContaining<ProductCreateDtoValidator>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile).Assembly);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+});
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
@@ -122,6 +174,7 @@ app.UseMiddleware<ExceptionMiddleware>();
         options.DefaultModelsExpandDepth(-1); // Model listelerini gizler
         options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None); // Collapse her þeyi
     });
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
