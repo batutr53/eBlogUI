@@ -52,6 +52,11 @@ namespace eBlog.Persistence.Configurations
                            j.HasKey(pt => new { pt.PostId, pt.TagId });
                            j.ToTable("PostTags");
                        });
+
+
+            builder.HasOne(x => x.Language)
+       .WithMany(x => x.Posts)
+       .HasForeignKey(x => x.LanguageCode);
         }
     }
 }

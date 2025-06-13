@@ -26,6 +26,8 @@
         public Guid CategoryId { get; set; }
         public List<Guid>? TagIds { get; set; }
         public SeoMetadataDto? SeoMetadata { get; set; }
+        public string LanguageCode { get; set; } = "tr";
+
 
     }
 

@@ -59,14 +59,6 @@ namespace eBlog.API.Controllers
             return Ok(result);
         }
 
-        // GET: api/post/recent/{count}
-        [HttpGet("recent/{count:int}")]
-        public async Task<IActionResult> GetRecent(int count)
-        {
-            var result = await _service.GetRecentPostsAsync(count);
-            if (!result.Success)
-                return BadRequest(result);
-            return Ok(result);
-        }
+       
     }
 }

@@ -124,6 +124,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPostModuleRepository, PostModuleRepository>();
 builder.Services.AddScoped<IPostModuleService, PostModuleService>();
 builder.Services.AddScoped<ISeoMetadataService, SeoMetadataService>();
+builder.Services.AddScoped<IPostTagRepository, PostTagRepository>();
+builder.Services.AddScoped<ISeoMetadataRepository, SeoMetadataRepository>();
 
 builder.Services.AddScoped<IAdminDashboardDao, AdminDashboardDao>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();

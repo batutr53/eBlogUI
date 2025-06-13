@@ -11,33 +11,64 @@ namespace eBlog.Application.Services
     public class PostService : GenericService<Post, PostListDto, PostCreateDto, PostUpdateDto>, IPostService
     {
         private readonly IPostRepository _postRepository;
-        private readonly IPostDao _postDao;
-        private readonly IMapper _mapper;
+        private readonly ISeoMetadataRepository _seoMetadataRepository;
+        private readonly IPostTagRepository _postTagRepository;
 
         public PostService(
             IPostRepository postRepository,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IPostDao postDao
+            ISeoMetadataRepository seoMetadataRepository,
+            IPostTagRepository postTagRepository
         ) : base(postRepository, unitOfWork, mapper)
         {
             _postRepository = postRepository;
-            _postDao = postDao;
-            _mapper = mapper;
+            _seoMetadataRepository = seoMetadataRepository;
+            _postTagRepository = postTagRepository;
         }
 
-        public async Task<IDataResult<List<PostListDto>>> GetRecentPostsAsync(int count)
+        public override async Task<IDataResult<PostListDto>> AddAsync(PostCreateDto dto)
         {
             try
             {
-                var entities = await _postDao.GetRecentPostsAsync(count);
-                var dtos = _mapper.Map<List<PostListDto>>(entities);
-                return new SuccessDataResult<List<PostListDto>>(dtos);
+                var post = _mapper.Map<Post>(dto);
+
+                // SEO varsa ekle ve bağla
+                if (dto.SeoMetadata != null)
+                {
+                    var seo = _mapper.Map<SeoMetadata>(dto.SeoMetadata);
+                    seo.Id = Guid.NewGuid();
+                    seo.CanonicalGroupId = Guid.NewGuid();
+                    await _seoMetadataRepository.AddAsync(seo);
+                    post.SeoMetadataId = seo.Id;
+                }
+
+                post.Id = Guid.NewGuid();
+                await _postRepository.AddAsync(post);
+
+                // Etiketler
+                if (dto.TagIds != null && dto.TagIds.Any())
+                {
+                    foreach (var tagId in dto.TagIds)
+                    {
+                        await _postTagRepository.AddAsync(new PostTag
+                        {
+                            PostId = post.Id,
+                            TagId = tagId
+                        });
+                    }
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                var resultDto = _mapper.Map<PostListDto>(post);
+                return new SuccessDataResult<PostListDto>(resultDto, "Post başarıyla eklendi.");
             }
             catch (Exception ex)
             {
-                return new ErrorDataResult<List<PostListDto>>("Son postlar getirilirken hata oluştu: " + ex.Message);
+                return new ErrorDataResult<PostListDto>("Post eklenirken hata oluştu: " + ex.Message);
             }
         }
+
     }
 }

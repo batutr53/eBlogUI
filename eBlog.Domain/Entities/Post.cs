@@ -1,5 +1,6 @@
 ﻿using eBlog.Domain.Common;
 using eBlog.Domain.Interfaces;
+using System;
 
 namespace eBlog.Domain.Entities
 {
@@ -26,7 +27,7 @@ namespace eBlog.Domain.Entities
         public User Author { get; set; } = null!;
         public Category Category { get; set; } = null!;
         public SeoMetadata? SeoMetadata { get; set; }
-
+        public Language Language { get; set; } = null!;
         public ICollection<PostTag> PostTags { get; set; } = new List<PostTag>();
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public ICollection<Like> Likes { get; set; } = new List<Like>();
