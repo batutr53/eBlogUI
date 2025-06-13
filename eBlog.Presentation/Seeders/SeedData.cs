@@ -12,10 +12,8 @@ public static class SeedData
         using var scope = serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        // Migration'ları uygula
         await context.Database.MigrateAsync();
 
-        // Roller
         if (!context.Roles.Any())
         {
             var roles = new List<Role>

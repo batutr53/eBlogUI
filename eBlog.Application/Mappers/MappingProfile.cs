@@ -2,12 +2,12 @@
 using eBlog.Application.DTOs;
 using eBlog.Application.DTOs.Dashboard;
 using eBlog.Domain.Entities;
+using eBlog.Domain.Enums;
 using eBlog.Domain.Models;
 using eBlog.Domain.Models.Dashboard;
 
 namespace eBlog.Application.Mappers
 {
-
     public class MappingProfile : Profile
     {
         public MappingProfile()
@@ -23,72 +23,76 @@ namespace eBlog.Application.Mappers
             // SeoMetadata
             CreateMap<SeoMetadata, SeoMetadataDto>().ReverseMap();
 
+            // User
             CreateMap<User, UserListDto>();
             CreateMap<User, UserDetailDto>();
             CreateMap<UserCreateDto, User>();
             CreateMap<UserUpdateDto, User>();
 
+            // Post
             CreateMap<Post, PostListDto>()
-    .ForMember(dest => dest.AuthorUserName, opt => opt.MapFrom(src => src.Author.UserName));
+                .ForMember(dest => dest.AuthorUserName, opt => opt.MapFrom(src => src.Author.UserName));
             CreateMap<Post, PostDetailDto>()
                 .ForMember(dest => dest.AuthorUserName, opt => opt.MapFrom(src => src.Author.UserName))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-                    .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata)); ;
+                .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata));
             CreateMap<PostCreateDto, Post>()
-    .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata));
-
+                .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata));
             CreateMap<PostUpdateDto, Post>();
 
+            // Category
             CreateMap<Category, CategoryListDto>();
             CreateMap<Category, CategoryDetailDto>();
             CreateMap<CategoryCreateDto, Category>();
             CreateMap<CategoryUpdateDto, Category>();
 
+            // Tag
             CreateMap<Tag, TagListDto>();
             CreateMap<TagCreateDto, Tag>();
             CreateMap<Tag, TagDetailDto>()
-    .ForMember(dest => dest.PostCount, opt => opt.MapFrom(src => src.PostTags.Count));
+                .ForMember(dest => dest.PostCount, opt => opt.MapFrom(src => src.PostTags.Count));
 
+            // Comment
             CreateMap<Comment, CommentListDto>()
-    .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName));
             CreateMap<CommentCreateDto, Comment>();
 
+            // ProductOrder
             CreateMap<ProductOrder, ProductOrderListDto>()
-    .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
-    .ForMember(dest => dest.BuyerUserName, opt => opt.MapFrom(src => src.Buyer.UserName))
-        .ForMember(dest => dest.BuyerEmail, opt => opt.MapFrom(src => src.Buyer.Email));
-            CreateMap<ProductOrderCreateDto, ProductOrder>();
-
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+                .ForMember(dest => dest.BuyerUserName, opt => opt.MapFrom(src => src.Buyer.UserName))
+                .ForMember(dest => dest.BuyerEmail, opt => opt.MapFrom(src => src.Buyer.Email));
             CreateMap<ProductOrderCreateDto, ProductOrder>()
                 .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => "pending"))
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.UnitPrice * src.Quantity));
 
+            // Cart
             CreateMap<Cart, CartDto>();
             CreateMap<CartItem, CartItemDto>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
 
+            // Notification, Like
             CreateMap<Notification, NotificationDto>();
-
             CreateMap<Like, LikeDto>();
 
+            // Favorite
             CreateMap<Favorite, FavoriteListDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.UserName))
                 .ForMember(dest => dest.PostTitle, opt => opt.MapFrom(src => src.Post != null ? src.Post.Title : null))
-                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : null)) // Eğer Product entity'si 'Book' olarak geçiyorsa, Product olarak güncelle
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : null))
                 .ForMember(dest => dest.CommentContent, opt => opt.MapFrom(src => src.Comment != null ? src.Comment.Content : null));
-
             CreateMap<FavoriteCreateDto, Favorite>();
 
+            // Follow
             CreateMap<Follow, FollowListDto>()
                 .ForMember(dest => dest.FollowerUserName, opt => opt.MapFrom(src => src.Follower.UserName))
                 .ForMember(dest => dest.FollowingUserName, opt => opt.MapFrom(src => src.Following.UserName));
-
             CreateMap<FollowCreateDto, Follow>();
-            CreateMap<DashboardTotals, DashboardTotalsDto>();
 
-            CreateMap<TopLikedPost, TopLikedPostDto>().ReverseMap();
+            // Dashboard DTOs
             CreateMap<DashboardTotals, DashboardTotalsDto>().ReverseMap();
+            CreateMap<TopLikedPost, TopLikedPostDto>().ReverseMap();
             CreateMap<TopSellingProduct, TopSellingProductDto>().ReverseMap();
             CreateMap<TopCommentedPost, TopCommentedPostDto>().ReverseMap();
             CreateMap<TopBuyer, TopBuyerDto>().ReverseMap();
@@ -105,12 +109,27 @@ namespace eBlog.Application.Mappers
             CreateMap<TagUsage, TagUsageDto>().ReverseMap();
             CreateMap<PersonalSummary, PersonalSummaryDto>().ReverseMap();
 
-
+            // PostModule
             CreateMap<PostModule, PostModuleDto>().ReverseMap();
-            CreateMap<Post, PostWithModulesDto>().ReverseMap();
-            CreateMap<PostModule, PostModuleListDto>().ReverseMap();
-            CreateMap<PostModule, PostModuleCreateDto>().ReverseMap();
-            CreateMap<PostModule, PostModuleUpdateDto>().ReverseMap();
+
+            CreateMap<PostModule, PostModuleListDto>()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()))
+                .ReverseMap()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => Enum.Parse<ModuleType>(src.Type)));
+
+            CreateMap<PostModule, PostModuleCreateDto>()
+                .ReverseMap()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => Enum.Parse<ModuleType>(src.Type)));
+
+            CreateMap<PostModule, PostModuleUpdateDto>()
+                .ReverseMap()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => Enum.Parse<ModuleType>(src.Type)));
+
+            CreateMap<Post, PostWithModulesDto>()
+                .ForMember(dest => dest.Modules, opt => opt.MapFrom(src => src.PostModules));
+            CreateMap<SeoMetadata, SeoMetadataDto>().ReverseMap();
+            CreateMap<SeoMetadata, SeoMetadataCreateDto>().ReverseMap();
+            CreateMap<SeoMetadata, SeoMetadataUpdateDto>().ReverseMap();
         }
     }
 }

@@ -121,6 +121,9 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IPostModuleRepository, PostModuleRepository>();
+builder.Services.AddScoped<IPostModuleService, PostModuleService>();
+builder.Services.AddScoped<ISeoMetadataService, SeoMetadataService>();
 
 builder.Services.AddScoped<IAdminDashboardDao, AdminDashboardDao>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();

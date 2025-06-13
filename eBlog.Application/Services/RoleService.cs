@@ -7,46 +7,27 @@ using eBlog.Shared.Results;
 
 namespace eBlog.Application.Services
 {
-    public class RoleService : IRoleService
+    public class RoleService : GenericService<Role, RoleDto, RoleCreateDto, RoleUpdateDto>, IRoleService
     {
         private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
-        public RoleService(IRoleRepository roleRepository, IMapper mapper, IUnitOfWork unitOfWork)
+        public RoleService(
+            IRoleRepository roleRepository,
+            IUnitOfWork unitOfWork,
+            IMapper mapper
+        ) : base(roleRepository, unitOfWork, mapper)
         {
             _roleRepository = roleRepository;
-            _mapper = mapper;
             _unitOfWork = unitOfWork;
-        }
-
-        public async Task<List<RoleListDto>> GetAllAsync()
-        {
-            var roles = await _roleRepository.GetAllAsync();
-            return _mapper.Map<List<RoleListDto>>(roles);
-        }
-
-        public async Task<RoleDto?> GetByIdAsync(Guid id)
-        {
-            var role = await _roleRepository.GetByIdAsync(id);
-            return _mapper.Map<RoleDto>(role);
+            _mapper = mapper;
         }
 
         public async Task<RoleDto?> GetByNameAsync(string name)
         {
             var role = await _roleRepository.GetByNameAsync(name);
             return _mapper.Map<RoleDto>(role);
-        }
-
-        public async Task<IResult> AddAsync(RoleCreateDto dto)
-        {
-            if ((await _roleRepository.GetByNameAsync(dto.Name)) is not null)
-                return new ErrorResult("Rol zaten mevcut.");
-
-            var entity = _mapper.Map<Role>(dto);
-            await _roleRepository.AddAsync(entity);
-            await _unitOfWork.SaveChangesAsync();
-            return new SuccessResult("Rol eklendi.");
         }
 
         public async Task<IDataResult<RoleDto>> FindOrCreateRoleByNameAsync(string roleName)
@@ -62,5 +43,4 @@ namespace eBlog.Application.Services
             return new SuccessDataResult<RoleDto>(roleDto, "Rol bulundu veya oluşturuldu.");
         }
     }
-
 }

@@ -21,8 +21,14 @@ namespace eBlog.Persistence.Repositories
         public async Task<TEntity?> GetByIdAsync(Guid id)
             => await _dbSet.FindAsync(id);
 
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _context.Set<TEntity>().Where(predicate).ToListAsync();
+        }
         public async Task<List<TEntity>> GetAllAsync()
-            => await _dbSet.ToListAsync();
+        {
+            return await _context.Set<TEntity>().ToListAsync();
+        }
 
         public async Task<List<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
             => await _dbSet.Where(predicate).ToListAsync();

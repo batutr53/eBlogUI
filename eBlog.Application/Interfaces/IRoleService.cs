@@ -1,15 +1,12 @@
 ﻿using eBlog.Application.DTOs;
+using eBlog.Domain.Entities;
 using eBlog.Shared.Results;
 
 namespace eBlog.Application.Interfaces
 {
-    public interface IRoleService
+    public interface IRoleService : IGenericService<Role, RoleDto, RoleCreateDto, RoleUpdateDto>
     {
-        Task<List<RoleListDto>> GetAllAsync();
-        Task<RoleDto?> GetByIdAsync(Guid id);
         Task<RoleDto?> GetByNameAsync(string name);
-        Task<IResult> AddAsync(RoleCreateDto dto);
         Task<IDataResult<RoleDto>> FindOrCreateRoleByNameAsync(string roleName);
-
     }
 }
