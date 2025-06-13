@@ -36,6 +36,11 @@ namespace eBlog.API.Controllers
             var deleted = await _service.DeleteAsync(id);
             return deleted.Success ? NoContent() : NotFound();
         }
+
+        [HttpPost("{canonicalId:guid}/variants")]
+        public async Task<IActionResult> AddVariant(Guid canonicalId, [FromBody] SeoMetadataCreateDto dto)
+            => Ok(await _service.AddVariantAsync(canonicalId, dto));
+
         [HttpGet("{postId}/variants")]
         public async Task<IActionResult> GetSeoVariantsByPost(Guid postId)
         {
