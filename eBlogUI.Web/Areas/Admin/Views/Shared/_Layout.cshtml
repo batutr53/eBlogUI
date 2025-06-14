@@ -1,0 +1,46 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Admin Panel</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,700" rel="stylesheet" />
+    <link href="~/template/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" />
+    <link href="~/template/css/sb-admin-2.min.css" rel="stylesheet" />
+
+</head>
+<body id="page-top">
+    <div id="wrapper">
+        <!-- Sidebar -->
+        @await Html.PartialAsync("_Sidebar")
+        <!-- End Sidebar -->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <!-- Topbar -->
+                @await Html.PartialAsync("_Topbar")
+                <!-- End Topbar -->
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
+            </div>
+            <!-- Footer -->
+            @await Html.PartialAsync("_Footer")
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="~/template/vendor/jquery/jquery.min.js"></script>
+    <script src="~/template/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/template/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="~/template/js/sb-admin-2.min.js"></script>
+
+    <!-- Optional Scripts Section for Views -->
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
