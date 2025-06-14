@@ -3,6 +3,7 @@ using eBlog.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using BCrypt.Net;
 using eBlog.Application.DTOs.Auth;
+using eBlog.Shared.Results;
 
 namespace eBlog.API.Controllers
 {
@@ -68,7 +69,7 @@ namespace eBlog.API.Controllers
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             await _userService.SaveRefreshTokenAsync(user.Id, refreshToken, ipAddress);
 
-            return Ok(new { token = jwtToken, refreshToken = refreshToken });
+            return Ok(new DataResult<object>(new { token = jwtToken, refreshToken = refreshToken }, true));
         }
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
