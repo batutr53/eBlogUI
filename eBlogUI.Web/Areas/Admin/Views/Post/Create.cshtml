@@ -25,6 +25,7 @@
             }
 
             <form asp-controller="Post" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
                 <div class="form-group">
                     <label for="Title">Başlık</label>
                     <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />

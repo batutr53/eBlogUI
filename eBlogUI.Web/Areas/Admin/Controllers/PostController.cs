@@ -54,7 +54,8 @@ namespace eBlogUI.Areas.Admin.Controllers
             await PopulateDropdownsAsync();
             return View(new PostCreateDto());
         }
-        [HttpPost("Create")]
+
+        [HttpPost]
         public async Task<IActionResult> Create(PostCreateDto dto)
         {
             await PopulateDropdownsAsync();
@@ -128,7 +129,18 @@ namespace eBlogUI.Areas.Admin.Controllers
             return View(dto);
         }
 
+     
+        public async Task<IActionResult> Detail(Guid id)
+        {
+            var result = await _postApiService.GetDetailAsync(id);
+            if (!result.Success || result.Data == null)
+            {
+                TempData["ErrorMessage"] = result.Message ?? "Post bulunamadı.";
+                return RedirectToAction("Index");
+            }
 
+            return View(result.Data);
+        }
         // Post Sil (AJAX)
         [HttpPost]
         public async Task<JsonResult> Delete(Guid id)

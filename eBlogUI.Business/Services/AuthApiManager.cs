@@ -28,8 +28,8 @@ namespace eBlogUI.Business.Services
 
             if (response.IsSuccessStatusCode)
             {
-                var result = JsonSerializer.Deserialize<DataResult<string>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
-                return result!;
+                var result = JsonSerializer.Deserialize<DataResult<AuthResponseDto>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+                return new DataResult<string>(result.Data.Token, result.Success, result.Message);
             }
 
             return new ErrorDataResult<string>("Kullanıcı adı veya şifre hatalı.");

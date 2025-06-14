@@ -14,10 +14,12 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
             _authApiService = authApiService;
         }
 
-        [HttpGet("Login")]
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            return View();
+        }
 
-        [HttpPost("Login")]
+        [HttpPost]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             var result = await _authApiService.LoginAsync(dto);
