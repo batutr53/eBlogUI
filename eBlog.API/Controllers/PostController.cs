@@ -1,7 +1,6 @@
 ﻿using eBlog.Application.DTOs;
 using eBlog.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace eBlog.API.Controllers
 {
@@ -24,10 +23,21 @@ namespace eBlog.API.Controllers
             return Ok(result);
         }
 
+        // ✅ YENİ: Post detayı için özel endpoint
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var result = await _service.GetByIdAsync(id);
+            var result = await _service.GetPostDetailAsync(id); // 🎯 Detay metodunu kullan
+            if (!result.Success)
+                return NotFound(result);
+            return Ok(result);
+        }
+
+        // ✅ YENİ: Slug ile erişim
+        [HttpGet("slug/{slug}")]
+        public async Task<IActionResult> GetBySlug(string slug)
+        {
+            var result = await _service.GetPostBySlugAsync(slug);
             if (!result.Success)
                 return NotFound(result);
             return Ok(result);
@@ -59,7 +69,5 @@ namespace eBlog.API.Controllers
                 return NotFound(result);
             return Ok(result);
         }
-
-       
     }
 }

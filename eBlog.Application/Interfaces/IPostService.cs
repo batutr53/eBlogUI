@@ -8,5 +8,7 @@ namespace eBlog.Application.Interfaces
     public interface IPostService : IGenericService<Post,PostListDto, PostCreateDto, PostUpdateDto>
     {
         Task<IDataResult<PostListDto>> AddAsync(PostCreateDto dto);
+        Task<IDataResult<PostDetailDto>> GetPostDetailAsync(Guid id);
+        Task<IDataResult<PostDetailDto>> GetPostBySlugAsync(string slug);
     }
 }

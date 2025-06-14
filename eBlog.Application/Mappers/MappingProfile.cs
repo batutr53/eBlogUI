@@ -20,8 +20,6 @@ namespace eBlog.Application.Mappers
             CreateMap<ProductCreateDto, Product>();
             CreateMap<ProductUpdateDto, Product>();
 
-            // SeoMetadata
-            CreateMap<SeoMetadata, SeoMetadataDto>().ReverseMap();
 
             // User
             CreateMap<User, UserListDto>();
@@ -33,11 +31,14 @@ namespace eBlog.Application.Mappers
             CreateMap<Post, PostListDto>()
                 .ForMember(dest => dest.AuthorUserName, opt => opt.MapFrom(src => src.Author.UserName));
             CreateMap<Post, PostDetailDto>()
-                .ForMember(dest => dest.AuthorUserName, opt => opt.MapFrom(src => src.Author.UserName))
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-                .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata));
+                      .ForMember(dest => dest.AuthorUserName, opt => opt.MapFrom(src => src.Author.UserName))
+                      .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
+                      .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata)) 
+                      .ForMember(dest => dest.TagIds, opt => opt.MapFrom(src =>
+                          src.PostTags != null ? src.PostTags.Select(pt => pt.TagId).ToList() : new List<Guid>()));
+
             CreateMap<PostCreateDto, Post>()
-                .ForMember(dest => dest.SeoMetadata, opt => opt.MapFrom(src => src.SeoMetadata));
+              .ForMember(dest => dest.SeoMetadata, opt => opt.Ignore());
             CreateMap<PostUpdateDto, Post>();
 
             // Category
@@ -131,8 +132,8 @@ namespace eBlog.Application.Mappers
             CreateMap<Post, PostWithModulesDto>()
                 .ForMember(dest => dest.Modules, opt => opt.MapFrom(src => src.PostModules));
             CreateMap<SeoMetadata, SeoMetadataDto>().ReverseMap();
-            CreateMap<SeoMetadata, SeoMetadataCreateDto>().ReverseMap();
-            CreateMap<SeoMetadata, SeoMetadataUpdateDto>().ReverseMap();
+            CreateMap<SeoMetadataCreateDto, SeoMetadata>();
+            CreateMap<SeoMetadataUpdateDto, SeoMetadata>();
         }
     }
 }
