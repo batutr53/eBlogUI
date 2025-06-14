@@ -1,0 +1,127 @@
+﻿@model eBlog.Application.DTOs.PostCreateDto
+@{
+    ViewData["Title"] = "Yeni Post Ekle";
+    var categories = ViewBag.Categories as List<eBlog.Application.DTOs.CategoryListDto>;
+    var tags = ViewBag.Tags as List<eBlog.Application.DTOs.TagListDto>;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h4 text-gray-800">Yeni Post Ekle</h1>
+        <a href="/Admin/Post" class="btn btn-secondary btn-sm">Geri Dön</a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            @* Hatalar *@
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <form asp-controller="Post" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label for="Title">Başlık</label>
+                    <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="Content">İçerik</label>
+                    <textarea class="form-control" id="Content" name="Content" rows="6">@Model.Content</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="CategoryId">Kategori</label>
+                    <select class="form-control" id="CategoryId" name="CategoryId" required>
+                        <option value="">-- Seçiniz --</option>
+                        @foreach (var category in categories ?? new())
+                        {
+                            <option value="@category.Id" @(category.Id == Model.CategoryId ? "selected" : "")>@category.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="TagIds">Etiketler</label>
+                    <select class="form-control" id="TagIds" name="TagIds" multiple>
+                        @foreach (var tag in tags ?? new())
+                        {
+                            <option value="@tag.Id" @(Model.TagIds?.Contains(tag.Id) == true ? "selected" : "")>@tag.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <hr />
+                <h5 class="text-secondary mb-3">SEO Bilgileri</h5>
+
+                <div class="form-group">
+                    <label>Meta Başlık</label>
+                    <input type="text" class="form-control" name="SeoMetadata.MetaTitle" value="@Model.SeoMetadata?.MetaTitle" />
+                </div>
+                <div class="form-group">
+                    <label>Meta Açıklama</label>
+                    <input type="text" class="form-control" name="SeoMetadata.MetaDescription" value="@Model.SeoMetadata?.MetaDescription" />
+                </div>
+                <div class="form-group">
+                    <label>Meta Anahtar Kelimeler</label>
+                    <input type="text" class="form-control" name="SeoMetadata.MetaKeywords" value="@Model.SeoMetadata?.MetaKeywords" />
+                </div>
+                <div class="form-group">
+                    <label>Canonical URL</label>
+                    <input type="text" class="form-control" name="SeoMetadata.CanonicalUrl" value="@Model.SeoMetadata?.CanonicalUrl" />
+                </div>
+                <div class="form-group">
+                    <label>OG Başlık</label>
+                    <input type="text" class="form-control" name="SeoMetadata.OpenGraphTitle" value="@Model.SeoMetadata?.OpenGraphTitle" />
+                </div>
+                <div class="form-group">
+                    <label>OG Açıklama</label>
+                    <input type="text" class="form-control" name="SeoMetadata.OpenGraphDescription" value="@Model.SeoMetadata?.OpenGraphDescription" />
+                </div>
+                <div class="form-group">
+                    <label>OG Görsel</label>
+                    <input type="text" class="form-control" name="SeoMetadata.OpenGraphImage" value="@Model.SeoMetadata?.OpenGraphImage" />
+                </div>
+                <div class="form-group">
+                    <label>Yapılandırılmış Veri (JSON-LD)</label>
+                    <textarea class="form-control" name="SeoMetadata.StructuredDataJson">@Model.SeoMetadata?.StructuredDataJson</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success mt-3">Kaydet</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        @if (TempData["SuccessMessage"] != null)
+        {
+                <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Başarılı',
+                        text: '@TempData["SuccessMessage"]'
+                    });
+                </text>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+                <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata',
+                        text: '@TempData["ErrorMessage"]'
+                    });
+                </text>
+        }
+    </script>
+}

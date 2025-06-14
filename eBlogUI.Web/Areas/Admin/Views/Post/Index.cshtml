@@ -1,0 +1,101 @@
+﻿@using eBlog.Application.DTOs
+@model List<PostListDto>
+
+@{
+    ViewData["Title"] = "Post Yönetimi";
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function deletePost(id) {
+            Swal.fire({
+                title: "Silmek istediğinize emin misiniz?",
+                text: "Bu işlem geri alınamaz!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Evet, sil",
+                cancelButtonText: "İptal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Post/Delete/' + id,
+                        type: 'POST',
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire("Silindi!", response.message, "success").then(() => location.reload());
+                            } else {
+                                Swal.fire("Hata!", response.message, "error");
+                            }
+                        },
+                        error: function () {
+                            Swal.fire("Hata!", "Sunucu hatası oluştu.", "error");
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+
+<div class="container-fluid">
+
+    <!-- Sayfa Başlık ve Buton -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 text-gray-800">Post Yönetimi</h1>
+        <a href="/Admin/Post/Create" class="btn btn-primary btn-sm shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Yeni Post Ekle
+        </a>
+    </div>
+
+    <!-- Liste Kartı -->
+    <div class="card shadow mb-4 border-0">
+        <div class="card-header py-3 bg-primary">
+            <h6 class="m-0 font-weight-bold text-white">Post Listesi</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" width="100%" cellspacing="0">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Başlık</th>
+                            <th>Slug</th>
+                            <th>Yazar</th>
+                            <th style="width: 160px;" class="text-right">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var post in Model)
+                        {
+                            <tr>
+                                <td>@post.Id.ToString().Substring(0, 8)...</td>
+                                <td>@post.Title</td>
+                                <td>@post.Slug</td>
+                                <td>@post.AuthorUserName</td>
+                                <td class="text-right">
+                                    <div class="d-inline-flex align-items-center" style="gap: 0.25rem;">
+                                        <a href="/Admin/Post/Detail/@post.Id" class="btn btn-sm btn-outline-info rounded-circle mr-1" title="Detay">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/Admin/Post/Edit/@post.Id" class="btn btn-sm btn-info" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button onclick="deletePost('@post.Id')" class="btn btn-sm btn-danger" title="Sil">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>

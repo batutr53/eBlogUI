@@ -1,0 +1,50 @@
+﻿@{
+    var currentPath = Context.Request.Path;
+    var menuItems = new List<(string Title, string Icon, string Url)>
+    {
+        ("Dashboard", "fas fa-tachometer-alt", "/Admin/Dashboard"),
+        ("Post Yönetimi", "fas fa-newspaper", "/Admin/Post"),
+        ("Ürünler", "fas fa-box", "/Admin/Product"),
+        ("Siparişler", "fas fa-shopping-cart", "/Admin/Order"),
+        ("SEO", "fas fa-search", "/Admin/Seo")
+    };
+}
+
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+    <!-- Sidebar - Logo/Admin -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/Admin/Dashboard">
+        <div class="sidebar-brand-icon rotate-n-15">
+            <i class="fas fa-feather-alt"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">eBlog Admin</div>
+    </a>
+
+    <hr class="sidebar-divider my-0" />
+
+    @foreach (var item in menuItems)
+    {
+        var isActive = currentPath.StartsWithSegments(item.Url, StringComparison.OrdinalIgnoreCase);
+        <li class="nav-item @(isActive ? "active" : "")">
+            <a class="nav-link" href="@item.Url">
+                <i class="@item.Icon"></i>
+                <span>@item.Title</span>
+            </a>
+        </li>
+    }
+
+    <hr class="sidebar-divider" />
+
+    <!-- Çıkış Butonu -->
+    <li class="nav-item">
+        <a class="nav-link text-danger" href="/Account/Logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Çıkış Yap</span>
+        </a>
+    </li>
+
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>
