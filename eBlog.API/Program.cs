@@ -1,6 +1,7 @@
 using eBlog.API.Middlewares;
 using eBlog.Application.Helpers;
 using eBlog.Application.Interfaces;
+using eBlog.Application.Interfaces.Repositories;
 using eBlog.Application.Mappers;
 using eBlog.Application.Services;
 using eBlog.Application.Validators;
@@ -9,6 +10,7 @@ using eBlog.Domain.Interfaces.DAO;
 using eBlog.Persistence.Contexts;
 using eBlog.Persistence.DAOs;
 using eBlog.Persistence.Repositories;
+using eBlog.Persistence.Repositories.Concrete;
 using eBlog.Persistence.Seeders;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -126,7 +128,7 @@ builder.Services.AddScoped<IPostModuleService, PostModuleService>();
 builder.Services.AddScoped<ISeoMetadataService, SeoMetadataService>();
 builder.Services.AddScoped<IPostTagRepository, PostTagRepository>();
 builder.Services.AddScoped<ISeoMetadataRepository, SeoMetadataRepository>();
-
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IAdminDashboardDao, AdminDashboardDao>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 

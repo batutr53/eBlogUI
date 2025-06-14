@@ -36,7 +36,11 @@ namespace eBlog.API.Controllers
                 UserName = dto.UserName,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Roles = new List<string> { "User" } // Default rol
+                Roles = new List<string> { "User" },
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                PhoneNumber = dto.PhoneNumber
+                
             };
 
             var result = await _userService.AddAsync(userCreateDto);

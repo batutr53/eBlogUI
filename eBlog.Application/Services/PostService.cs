@@ -5,6 +5,8 @@ using eBlog.Domain.Entities;
 using eBlog.Domain.Interfaces;
 using eBlog.Domain.Interfaces.DAO;
 using eBlog.Shared.Results;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace eBlog.Application.Services
 {
@@ -13,6 +15,7 @@ namespace eBlog.Application.Services
         private readonly IPostRepository _postRepository;
         private readonly ISeoMetadataRepository _seoMetadataRepository;
         private readonly IPostTagRepository _postTagRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PostService(
             IPostRepository postRepository,
@@ -20,19 +23,29 @@ namespace eBlog.Application.Services
             IMapper mapper,
             ISeoMetadataRepository seoMetadataRepository,
             IPostTagRepository postTagRepository
-        ) : base(postRepository, unitOfWork, mapper)
+,
+            IHttpContextAccessor httpContextAccessor) : base(postRepository, unitOfWork, mapper)
         {
             _postRepository = postRepository;
             _seoMetadataRepository = seoMetadataRepository;
             _postTagRepository = postTagRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
-
+        private string GenerateSlug(string title)
+        {
+            return title.ToLower().Replace(" ", "-").Replace("ı", "i").Replace("ç", "c")
+                .Replace("ğ", "g").Replace("ö", "o").Replace("ş", "s").Replace("ü", "u");
+        }
         public override async Task<IDataResult<PostListDto>> AddAsync(PostCreateDto dto)
         {
             try
             {
                 var post = _mapper.Map<Post>(dto);
+                var userIdStr = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value ?? _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdStr))
+                    throw new Exception("Kullanıcı kimliği alınamadı.");
 
+                Guid userId = Guid.Parse(userIdStr);
                 // SEO varsa ekle ve bağla
                 if (dto.SeoMetadata != null)
                 {
@@ -44,7 +57,10 @@ namespace eBlog.Application.Services
                 }
 
                 post.Id = Guid.NewGuid();
-                await _postRepository.AddAsync(post);
+                post.Slug ??= GenerateSlug(post.Title);
+                post.AuthorId = userId;
+                post.UserId = userId;
+              await _postRepository.AddAsync(post);
 
                 // Etiketler
                 if (dto.TagIds != null && dto.TagIds.Any())

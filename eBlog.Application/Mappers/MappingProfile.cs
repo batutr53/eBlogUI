@@ -108,6 +108,9 @@ namespace eBlog.Application.Mappers
             CreateMap<HourlyTraffic, HourlyTrafficDto>().ReverseMap();
             CreateMap<TagUsage, TagUsageDto>().ReverseMap();
             CreateMap<PersonalSummary, PersonalSummaryDto>().ReverseMap();
+            CreateMap<Role, RoleDto>()
+       .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+       .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name));
 
             // PostModule
             CreateMap<PostModule, PostModuleDto>().ReverseMap();

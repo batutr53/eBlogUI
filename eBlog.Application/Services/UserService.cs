@@ -2,6 +2,7 @@
 using eBlog.Application.DTOs;
 using eBlog.Application.DTOs.Auth;
 using eBlog.Application.Interfaces;
+using eBlog.Application.Interfaces.Repositories;
 using eBlog.Domain.Entities;
 using eBlog.Domain.Interfaces;
 using eBlog.Domain.Interfaces.DAO;
@@ -16,6 +17,7 @@ namespace eBlog.Application.Services
         private readonly IUserDao _userDao;
         private readonly IMapper _mapper;
         private readonly IRoleRepository _roleRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public UserService(
             IUserRepository userRepository,
@@ -24,13 +26,15 @@ namespace eBlog.Application.Services
             IUserDao userDao,
             IJwtService jwtService,
             IRoleRepository roleRepository
-        ) : base(userRepository, unitOfWork, mapper)
+,
+            IRefreshTokenRepository refreshTokenRepository) : base(userRepository, unitOfWork, mapper)
         {
             _userRepository = userRepository;
             _userDao = userDao;
             _mapper = mapper;
             _jwtService = jwtService;
             _roleRepository = roleRepository;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         public async Task<IResult> AddRoleToUserAsync(UserRoleUpdateDto dto)
@@ -189,7 +193,7 @@ namespace eBlog.Application.Services
                 Created = DateTime.UtcNow,
             };
 
-            user.RefreshTokens.Add(token);
+            await _refreshTokenRepository.AddAsync(token);
             await _unitOfWork.SaveChangesAsync();
 
             return new SuccessResult("Refresh token kaydedildi.");

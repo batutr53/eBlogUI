@@ -13,7 +13,31 @@ public static class SeedData
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await context.Database.MigrateAsync();
+        if (!context.Languages.Any())
+        {
+            var languages = new List<Language>
+            {
+                new Language
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "tr",
+                    Name = "Türkçe",
+                    IsDefault = true,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Language
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "en",
+                    Name = "English",
+                    IsDefault = false,
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
 
+            await context.Languages.AddRangeAsync(languages);
+            await context.SaveChangesAsync();
+        }
         if (!context.Roles.Any())
         {
             var roles = new List<Role>
@@ -98,11 +122,13 @@ public static class SeedData
                 CategoryId = category.Id,
                 IsPublished = true,
                 PublishedAt = DateTime.UtcNow,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                LanguageCode = "tr"
             };
 
             context.Posts.Add(post);
             await context.SaveChangesAsync();
         }
+      
     }
 }

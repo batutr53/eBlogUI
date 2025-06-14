@@ -17,6 +17,7 @@
         public string AuthorUserName { get; set; } = null!;
         public string CategoryName { get; set; } = null!;
         public SeoMetadataDto? SeoMetadata { get; set; }
+        public List<Guid>? TagIds { get; set; }
     }
 
     public class PostCreateDto

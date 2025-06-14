@@ -30,10 +30,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared.csproj">
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\eBlog.Application\eBlog.Application.csproj" />
     <ProjectReference Include="..\eBlog.Infrastructure\eBlog.Infrastructure.csproj" />
     <ProjectReference Include="..\eBlog.Presentation\eBlog.Persistence.csproj" />
-    <ProjectReference Include="..\eBlog.Shared\eBlog.Shared.csproj" />
   </ItemGroup>
 
 </Project>
