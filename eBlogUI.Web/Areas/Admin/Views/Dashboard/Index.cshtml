@@ -1,6 +1,558 @@
-﻿@{
-    ViewData["Title"] = "Dashboard";
+@model eBlogUI.Models.Dashboard.DashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2>Admin Dashboard</h2>
-<p>Panelin yüklenmesini bekleyin kral 😎</p>
+@section Styles {
+    <style>
+        .dashboard-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .stat-card.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .stat-card.info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .stat-card.danger {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .table-card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .badge-modern {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+}
+
+<!-- Dashboard Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">📊 Admin Dashboard</h1>
+        <p class="mb-0 text-muted">Hoş geldin! İşte sitenin genel durumu</p>
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick="refreshDashboard()">
+            <i class="fas fa-sync-alt"></i> Yenile
+        </button>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Ana İstatistikler -->
+@if (Model.Totals != null)
+{
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="h4 mb-0">@Model.Totals.UserCount.ToString("N0")</div>
+                        <small>Toplam Kullanıcı</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card success">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-blog fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="h4 mb-0">@Model.Totals.PostCount.ToString("N0")</div>
+                        <small>Toplam Post</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card warning">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-comments fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="h4 mb-0">@Model.Totals.CommentCount.ToString("N0")</div>
+                        <small>Toplam Yorum</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stat-card info">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-lira-sign fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="h4 mb-0">₺@Model.Totals.TotalRevenue.ToString("N2")</div>
+                        <small>Toplam Gelir</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="stat-card danger">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-box fa-2x"></i>
+                    </div>
+                    <div>
+                        <div class="h4 mb-0">@Model.Totals.ProductCount.ToString("N0")</div>
+                        <small>Toplam Ürün</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="stat-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-shopping-cart fa-2x text-dark"></i>
+                    </div>
+                    <div>
+                        <div class="h4 mb-0 text-dark">@Model.Totals.OrderCount.ToString("N0")</div>
+                        <small class="text-dark">Toplam Sipariş</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Grafikler -->
+<div class="row mb-4">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="m-0 font-weight-bold">📈 Kullanıcı Büyümesi (30 Gün)</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="userGrowthChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-header bg-success text-white">
+                <h6 class="m-0 font-weight-bold">🍰 Kategori Dağılımı</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <h6 class="m-0 font-weight-bold">📦 Sipariş Durumları</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="orderStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6 col-lg-6">
+        <div class="card dashboard-card">
+            <div class="card-header bg-warning text-white">
+                <h6 class="m-0 font-weight-bold">⏰ Saatlik Trafik</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="hourlyTrafficChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- En İyiler Listesi -->
+<div class="row mb-4">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card dashboard-card table-card">
+            <div class="card-header bg-gradient-primary text-white">
+                <h6 class="m-0 font-weight-bold">👍 En Çok Beğenilen Postlar</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Post</th>
+                                <th>Yazar</th>
+                                <th class="text-center">❤️ Beğeni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var post in Model.TopLikedPosts.Take(5))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                            {
+                                                <img src="@post.ImageUrl" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;" />
+                                            }
+                                            <div>
+                                                <div class="fw-bold">@post.Title</div>
+                                                <small class="text-muted">@post.CreatedDate.ToString("dd.MM.yyyy")</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>@post.AuthorName</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger badge-modern">@post.LikeCount</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-6 col-lg-6">
+        <div class="card dashboard-card table-card">
+            <div class="card-header bg-gradient-success text-white">
+                <h6 class="m-0 font-weight-bold">🛒 En Çok Satan Ürünler</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ürün</th>
+                                <th>Fiyat</th>
+                                <th class="text-center">📊 Satış</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model.TopSellingProducts.Take(5))
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                            {
+                                                <img src="@product.ImageUrl" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;" />
+                                            }
+                                            <div class="fw-bold">@product.Name</div>
+                                        </div>
+                                    </td>
+                                    <td>₺@product.Price.ToString("N2")</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success badge-modern">@product.SoldCount</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aktiviteler -->
+<div class="row mb-4">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card dashboard-card table-card">
+            <div class="card-header bg-gradient-info text-white">
+                <h6 class="m-0 font-weight-bold">✍️ Aktif Yazarlar</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Yazar</th>
+                                <th class="text-center">📝 Post</th>
+                                <th class="text-center">❤️ Beğeni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var author in Model.ActiveAuthors.Take(5))
+                            {
+                                <tr>
+                                    <td class="fw-bold">@author.UserName</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary badge-modern">@author.PostCount</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger badge-modern">@author.TotalLikes</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-6 col-lg-6">
+        <div class="card dashboard-card table-card">
+            <div class="card-header bg-gradient-warning text-white">
+                <h6 class="m-0 font-weight-bold">🏆 En İyi Müşteriler</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Müşteri</th>
+                                <th class="text-center">📦 Sipariş</th>
+                                <th class="text-center">💰 Harcama</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var buyer in Model.TopBuyers.Take(5))
+                            {
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <div class="fw-bold">@buyer.UserName</div>
+                                            <small class="text-muted">@buyer.Email</small>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info badge-modern">@buyer.OrderCount</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success badge-modern">₺@buyer.TotalSpent.ToString("N2")</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Yükleniyor...</span>
+    </div>
+    <p>Dashboard verileri yükleniyor...</p>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Chart.js konfigürasyonu
+        Chart.defaults.font.family = 'Arial, sans-serif';
+        Chart.defaults.color = '#858796';
+
+        // Kullanıcı büyümesi grafiği
+        const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+        new Chart(userGrowthCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.UserGrowthStats.Select(x => x.Date.ToString("dd.MM")).ToArray())),
+                datasets: [{
+                    label: 'Yeni Kullanıcılar',
+                    data: @Html.Raw(Json.Serialize(Model.UserGrowthStats.Select(x => x.NewUserCount).ToArray())),
+                    borderColor: 'rgb(78, 115, 223)',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: true,
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Kategori dağılımı grafiği
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.CategoryDistribution.Select(x => x.CategoryName).ToArray())),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.CategoryDistribution.Select(x => x.PostCount).ToArray())),
+                    backgroundColor: [
+                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                        '#858796', '#5a5c69', '#6f42c1', '#e83e8c', '#fd7e14'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Sipariş durumları grafiği
+        const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+        new Chart(orderStatusCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.OrderStatusCounts.Select(x => x.Status).ToArray())),
+                datasets: [{
+                    label: 'Sipariş Sayısı',
+                    data: @Html.Raw(Json.Serialize(Model.OrderStatusCounts.Select(x => x.Count).ToArray())),
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d'],
+                    borderWidth: 0,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: true,
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Saatlik trafik grafiği
+        const hourlyTrafficCtx = document.getElementById('hourlyTrafficChart').getContext('2d');
+        new Chart(hourlyTrafficCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.HourlyTraffic.Select(x => x.Hour + ":00").ToArray())),
+                datasets: [{
+                    label: 'Ziyaretçi Sayısı',
+                    data: @Html.Raw(Json.Serialize(Model.HourlyTraffic.Select(x => x.VisitorCount).ToArray())),
+                    backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: true,
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Dashboard yenileme fonksiyonu
+        function refreshDashboard() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+            location.reload();
+        }
+
+        // Sayfa yüklendiğinde loading'i gizle
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        });
+    </script>
+}
