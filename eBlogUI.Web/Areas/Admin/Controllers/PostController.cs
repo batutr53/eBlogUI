@@ -1,6 +1,8 @@
-﻿using eBlog.Application.DTOs;
+using eBlogUI.Models.Dtos.Category;
+using eBlogUI.Models.Dtos.Tag;
+using eBlogUI.Models.Dtos.Post;
+using eBlogUI.Models.Dtos;
 using eBlogUI.Business.Interfaces;
-using eBlogUI.Business.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eBlogUI.Areas.Admin.Controllers
@@ -74,7 +76,7 @@ namespace eBlogUI.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Post detayı alınırken hata: {PostId}", id);
+                _logger.LogError(ex, "Post detayı alınırken beklenmeyen hata: {PostId}", id);
                 TempData["ErrorMessage"] = "Post detayı alınırken bir hata oluştu.";
                 return RedirectToAction("Index");
             }
@@ -170,18 +172,23 @@ namespace eBlogUI.Areas.Admin.Controllers
 
                 if (!postResult.Success || postResult.Data == null)
                 {
-                    TempData["ErrorMessage"] = postResult.Message ?? "Post bulunamadı.";
+                    TempData["ErrorMessage"] = "Post bulunamadı.";
                     return RedirectToAction("Index");
                 }
 
-                await PopulateDropdownsAsync();
+                var categoriesResult = await _categoryApiService.GetListAsync();
+                var tagsResult = await _tagApiService.GetListAsync();
+
+                ViewBag.Categories = categoriesResult.Success ? categoriesResult.Data : new List<CategoryListDto>();
+                ViewBag.Tags = tagsResult.Success ? tagsResult.Data : new List<TagListDto>();
 
                 var updateDto = new PostUpdateDto
                 {
+                    Id = postResult.Data.Id,
                     Title = postResult.Data.Title,
                     Content = postResult.Data.Content,
-                    CategoryId = GetCategoryIdByName(postResult.Data.CategoryName),
-                    TagIds = postResult.Data.TagIds ?? new List<Guid>()
+                    CategoryId = postResult.Data.CategoryId,
+                    Tags = postResult.Data.Tags ?? new List<string>()
                 };
 
                 ViewBag.PostId = id;
@@ -191,8 +198,7 @@ namespace eBlogUI.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Post düzenleme sayfası yüklenirken hata: {PostId}", id);
-                TempData["ErrorMessage"] = "Post bilgileri alınırken hata oluştu.";
+                TempData["ErrorMessage"] = "Post yüklenirken hata oluştu: " + ex.Message;
                 return RedirectToAction("Index");
             }
         }
@@ -204,58 +210,55 @@ namespace eBlogUI.Areas.Admin.Controllers
         {
             try
             {
-                await PopulateDropdownsAsync();
-                ViewBag.PostId = id;
-
                 if (!ModelState.IsValid)
                 {
+                    var categoriesResult = await _categoryApiService.GetListAsync();
+                    var tagsResult = await _tagApiService.GetListAsync();
+                    ViewBag.Categories = categoriesResult.Success ? categoriesResult.Data : new List<CategoryListDto>();
+                    ViewBag.Tags = tagsResult.Success ? tagsResult.Data : new List<TagListDto>();
                     return View(dto);
                 }
 
                 var result = await _postApiService.UpdateAsync(id, dto);
-
                 if (result.Success)
                 {
-                    TempData["SuccessMessage"] = result.Message ?? "Post başarıyla güncellendi.";
-                    _logger.LogInformation("Post başarıyla güncellendi: {PostId}", id);
+                    TempData["SuccessMessage"] = "Post başarıyla güncellendi.";
                     return RedirectToAction("Index");
                 }
 
-                ModelState.AddModelError("", result.Message ?? "Post güncellenemedi.");
+                TempData["ErrorMessage"] = result.Message;
                 return View(dto);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Post güncellenirken hata: {PostId}", id);
-                await PopulateDropdownsAsync();
-                ViewBag.PostId = id;
-                ModelState.AddModelError("", "Post güncellenirken beklenmeyen bir hata oluştu.");
+                TempData["ErrorMessage"] = "Post güncellenirken hata oluştu: " + ex.Message;
                 return View(dto);
             }
         }
 
-        // ✅ Post Sil (AJAX)
+        // ✅ Post Sil
         [HttpPost]
-        public async Task<JsonResult> Delete(Guid id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
         {
             try
             {
                 var result = await _postApiService.DeleteAsync(id);
-
                 if (result.Success)
                 {
-                    _logger.LogInformation("Post başarıyla silindi: {PostId}", id);
-                    return Json(new { success = true, message = result.Message ?? "Post başarıyla silindi." });
+                    TempData["SuccessMessage"] = "Post başarıyla silindi.";
                 }
-
-                _logger.LogWarning("Post silinemedi: {PostId} - {Message}", id, result.Message);
-                return Json(new { success = false, message = result.Message ?? "Post silinemedi." });
+                else
+                {
+                    TempData["ErrorMessage"] = result.Message;
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Post silinirken beklenmeyen hata: {PostId}", id);
-                return Json(new { success = false, message = "Sunucu hatası oluştu." });
+                TempData["ErrorMessage"] = "Post silinirken hata oluştu: " + ex.Message;
             }
+
+            return RedirectToAction("Index");
         }
 
         // ✅ Yardımcı metodlar
@@ -263,9 +266,15 @@ namespace eBlogUI.Areas.Admin.Controllers
         {
             if (ViewBag.Categories is List<CategoryListDto> categories)
             {
-                return categories.FirstOrDefault(c => c.Name == categoryName)?.Id ?? Guid.Empty;
+                return categories.FirstOrDefault(c => c.Name == categoryName)?.Id ?? Guid.Empty; // Default category ID
             }
-            return Guid.Empty;
+            return Guid.Empty; // Default category ID
+        }
+
+        private int? GetUserId()
+        {
+            var userIdClaim = HttpContext.User.FindFirst("UserId")?.Value;
+            return int.TryParse(userIdClaim, out var userId) ? userId : null;
         }
 
         // ✅ SEO Preview

@@ -1,5 +1,4 @@
-﻿@using eBlog.Application.DTOs
-@model List<PostListDto>
+@model List<eBlogUI.Models.Dtos.Post.PostListDto>
 
 @{
     ViewData["Title"] = "Post Yönetimi";
@@ -74,7 +73,7 @@
                                 <td>@post.Id.ToString().Substring(0, 8)...</td>
                                 <td>@post.Title</td>
                                 <td>@post.Slug</td>
-                                <td>@post.AuthorUserName</td>
+                                <td>@post.AuthorName</td>
                                 <td class="text-right">
                                     <div class="d-inline-flex align-items-center" style="gap: 0.25rem;">
                                         <a href="/Admin/Post/Detail/@post.Id" class="btn btn-sm btn-outline-info rounded-circle mr-1" title="Detay">
@@ -88,8 +87,6 @@
                                         </button>
                                     </div>
                                 </td>
-
-
                             </tr>
                         }
                     </tbody>

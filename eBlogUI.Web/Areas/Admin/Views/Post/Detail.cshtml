@@ -1,4 +1,4 @@
-﻿@model eBlog.Application.DTOs.PostDetailDto
+@model eBlogUI.Models.Dtos.Post.PostDetailDto
 @{
     ViewData["Title"] = "Post Detayı";
 }
@@ -24,7 +24,7 @@
             <h5 class="text-dark font-weight-bold">@Model.Title</h5>
             <p class="mb-2"><strong>Slug:</strong> @Model.Slug</p>
             <p class="mb-2"><strong>Kategori:</strong> @Model.CategoryName</p>
-            <p class="mb-3"><strong>Yazar:</strong> @Model.AuthorUserName</p>
+            <p class="mb-3"><strong>Yazar:</strong> @Model.AuthorName</p>
             <hr />
             <div>
                 <h6 class="text-muted">İçerik:</h6>
@@ -44,17 +44,21 @@
                         {
                             <li class="list-group-item"><strong>Canonical URL:</strong> @Model.SeoMetadata.CanonicalUrl</li>
                         }
-                        @if (!string.IsNullOrEmpty(Model.SeoMetadata.OpenGraphTitle))
+                        @if (!string.IsNullOrEmpty(Model.SeoMetadata.OgTitle))
                         {
-                            <li class="list-group-item"><strong>OG Title:</strong> @Model.SeoMetadata.OpenGraphTitle</li>
+                            <li class="list-group-item"><strong>OG Title:</strong> @Model.SeoMetadata.OgTitle</li>
                         }
-                        @if (!string.IsNullOrEmpty(Model.SeoMetadata.OpenGraphImage))
+                        @if (!string.IsNullOrEmpty(Model.SeoMetadata.OgImage))
                         {
-                            <li class="list-group-item"><strong>OG Görsel:</strong> <a href="@Model.SeoMetadata.OpenGraphImage" target="_blank">@Model.SeoMetadata.OpenGraphImage</a></li>
+                            <li class="list-group-item"><strong>OG Görsel:</strong> <a href="@Model.SeoMetadata.OgImage" target="_blank">@Model.SeoMetadata.OgImage</a></li>
                         }
-                        @if (!string.IsNullOrEmpty(Model.SeoMetadata.StructuredDataJson))
+                        @if (!string.IsNullOrEmpty(Model.SeoMetadata.TwitterTitle))
                         {
-                            <li class="list-group-item"><strong>JSON-LD:</strong> <pre class="bg-dark text-white p-2 rounded">@Model.SeoMetadata.StructuredDataJson</pre></li>
+                            <li class="list-group-item"><strong>Twitter Title:</strong> @Model.SeoMetadata.TwitterTitle</li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.SeoMetadata.TwitterDescription))
+                        {
+                            <li class="list-group-item"><strong>Twitter Description:</strong> @Model.SeoMetadata.TwitterDescription</li>
                         }
                     </ul>
                 }

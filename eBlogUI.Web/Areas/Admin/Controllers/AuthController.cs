@@ -1,4 +1,4 @@
-﻿using eBlog.Application.DTOs.Auth;
+using eBlogUI.Models.Dtos;
 using eBlogUI.Business.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,17 +20,17 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginDto dto)
+        public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            var result = await _authApiService.LoginAsync(dto);
-            if (!result.Success)
+            var result = await _authApiService.LoginAsync(loginDto);
+            if (!result.Success || result.Data == null)
             {
                 TempData["ErrorMessage"] = result.Message;
-                return View(dto);
+                return View(loginDto);
             }
 
-            var token = result.Data;
-            Response.Cookies.Append("AuthToken", token, new CookieOptions
+            var authUser = result.Data;
+            Response.Cookies.Append("AuthToken", authUser.Token, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,

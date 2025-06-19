@@ -1,50 +1,98 @@
 using eBlogUI.Business.Configuration;
 using eBlogUI.Business.Interfaces;
 using eBlogUI.Business.Services;
-using eBlogUI.Business.Services.Interfaces;
-using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
-// ApiSettings (BaseUrl) config binding
+// API Configuration
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
-var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
-    ?? throw new InvalidOperationException("ApiSettings:BaseUrl bulunamadý!");
 
-// Named HttpClient (AuthorizedClient) - Cookie'den token alýr ve Authorization header'a ekler
+// HTTP Client with Authorization
 builder.Services.AddHttpClient("AuthorizedClient", (provider, client) =>
 {
-    var accessor = provider.GetRequiredService<IHttpContextAccessor>();
-    var token = accessor.HttpContext?.Request.Cookies["AuthToken"];
-
-    if (!string.IsNullOrEmpty(token))
+    var apiSettings = builder.Configuration.GetSection("ApiSettings").Get<ApiSettings>();
+    client.BaseAddress = new Uri(apiSettings?.BaseUrl ?? "https://localhost:7290");
+    
+    // Token'Ä± HttpContext'ten al ve Authorization header'a ekle
+    var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+    var context = httpContextAccessor.HttpContext;
+    
+    if (context != null)
     {
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = context.Session.GetString("AuthToken") ?? context.Request.Cookies["AuthToken"];
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
     }
-
-    client.BaseAddress = new Uri(apiBaseUrl);
 });
 
-// Generic HttpClient injection (AuthorizedClient)
+// HttpClient Factory iÃ§in named client'Ä± scoped olarak register et
 builder.Services.AddScoped(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();
     return factory.CreateClient("AuthorizedClient");
 });
 
-// API Servisleri - BaseAddress'e gerek yok çünkü AuthorizedClient üzerinden çaðrýlýyor
+// Business Services
 builder.Services.AddScoped<IPostApiService, PostApiManager>();
 builder.Services.AddScoped<ICategoryApiService, CategoryApiManager>();
 builder.Services.AddScoped<ITagApiService, TagApiManager>();
 builder.Services.AddScoped<IAuthApiService, AuthApiManager>();
+builder.Services.AddScoped<IAdminDashboardApiService, AdminDashboardApiManager>();
+
+// Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"] ?? "default-secret-key-minimum-32-characters-long";
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ClockSkew = TimeSpan.Zero
+    };
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+});
+
+// Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -53,16 +101,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
+app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Area destekli route
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(
-        name: "areas",
-        pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
+// Admin Area Route
+app.MapControllerRoute(
+    name: "admin",
+    pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
 
-    endpoints.MapDefaultControllerRoute();
-});
+// Default Route
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.Run();

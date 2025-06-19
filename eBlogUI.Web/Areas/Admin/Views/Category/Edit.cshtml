@@ -1,0 +1,73 @@
+@model eBlogUI.Models.Dtos.Category.CategoryUpdateDto
+
+@{
+    ViewData["Title"] = "Kategori Düzenle";
+    Layout = "_AdminLayout";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">@ViewData["Title"]</h6>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Slug" class="control-label"></label>
+                <input asp-for="Slug" class="form-control" />
+                <span asp-validation-for="Slug" class="text-danger"></span>
+                <small class="form-text text-muted">Boş bırakılırsa otomatik oluşturulacaktır.</small>
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group form-check">
+                <input class="form-check-input" asp-for="IsActive" />
+                <label class="form-check-label" asp-for="IsActive"></label>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Güncelle
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Listeye Dön
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Otomatik slug oluşturma
+            $("#Name").on('input', function() {
+                if ($("#Slug").val() === '') {
+                    var text = $(this).val();
+                    var slug = text.toString().toLowerCase()
+                        .replace(/\s+/g, '-')           // Boşlukları tire ile değiştir
+                        .replace(/[^\w\-]+/g, '')       // Kelime karakteri olmayanları kaldır
+                        .replace(/\-\-+/g, '-')          // Çift tireleri tek yap
+                        .replace(/^-+/, '')              // Baştaki tireleri kaldır
+                        .replace(/-+$/, '');             // Sondaki tireleri kaldır
+                    $("#Slug").val(slug);
+                }
+            });
+        });
+    </script>
+}

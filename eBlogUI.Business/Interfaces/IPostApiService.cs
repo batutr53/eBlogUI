@@ -1,31 +1,32 @@
-﻿using eBlog.Application.DTOs;
+using eBlogUI.Models.Dtos;
+using eBlogUI.Models.Dtos.Post;
 using eBlog.Shared.Results;
 
 namespace eBlogUI.Business.Interfaces
 {
     public interface IPostApiService
     {
-        Task<DataResult<List<PostListDto>>> GetListAsync();
-        Task<DataResult<List<PostListDto>>> GetPublishedPostsAsync();
-        Task<DataResult<List<PostListDto>>> GetPostsByAuthorAsync(Guid authorId);
-        Task<DataResult<List<PostListDto>>> GetPostsByCategoryAsync(Guid categoryId);
+        Task<IDataResult<List<PostListDto>>> GetListAsync();
+        Task<IDataResult<List<PostListDto>>> GetPublishedPostsAsync();
+        Task<IDataResult<List<PostListDto>>> GetPostsByAuthorAsync(Guid authorId);
+        Task<IDataResult<List<PostListDto>>> GetPostsByCategoryAsync(Guid categoryId);
 
         // Detay metodları  
-        Task<DataResult<PostDetailDto>> GetDetailAsync(Guid id);
-        Task<DataResult<PostDetailDto>> GetDetailBySlugAsync(string slug);
+        Task<IDataResult<PostDetailDto>> GetDetailAsync(Guid id);
+        Task<IDataResult<PostDetailDto>> GetDetailBySlugAsync(string slug);
 
         // CRUD metodları
-        Task<Result> CreateAsync(PostCreateDto dto);
-        Task<Result> UpdateAsync(Guid id, PostUpdateDto dto);
-        Task<Result> DeleteAsync(Guid id);
+        Task<IResult> CreateAsync(PostCreateDto dto);
+        Task<IResult> UpdateAsync(Guid id, PostUpdateDto dto);
+        Task<IResult> DeleteAsync(Guid id);
 
         // Özel metodlar
-        Task<DataResult<List<PostListDto>>> SearchPostsAsync(string searchTerm);
-        Task<DataResult<List<PostListDto>>> GetRecentPostsAsync(int count = 10);
-        Task<DataResult<List<PostListDto>>> GetPopularPostsAsync(int count = 10);
+        Task<IDataResult<List<PostListDto>>> SearchPostsAsync(string searchTerm);
+        Task<IDataResult<List<PostListDto>>> GetRecentPostsAsync(int count = 10);
+        Task<IDataResult<List<PostListDto>>> GetPopularPostsAsync(int count = 10);
 
         // SEO ve Slug metodları
-        Task<DataResult<PostDetailDto>> GetPostForSeoAsync(string slug);
-        Task<Result> UpdatePostSeoAsync(Guid id, SeoMetadataDto seoDto);
+        Task<IDataResult<PostDetailDto>> GetPostForSeoAsync(string slug);
+        Task<IResult> UpdatePostSeoAsync(Guid id, SeoMetadataDto seoDto);
     }
 }

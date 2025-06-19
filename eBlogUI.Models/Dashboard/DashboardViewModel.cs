@@ -14,9 +14,9 @@ namespace eBlogUI.Models.Dashboard
         public List<ActiveAuthorViewModel> ActiveAuthors { get; set; } = new();
         public List<PostModuleUsageViewModel> PostModuleUsage { get; set; } = new();
         public List<CouponUsageViewModel> CouponUsage { get; set; } = new();
-        public List<LoginActivityViewModel> RecentLoginActivities { get; set; } = new();
+        public List<LoginActivityViewModel> RecentLogins { get; set; } = new();
         public List<ErrorLogCountViewModel> ErrorLogCounts { get; set; } = new();
         public List<HourlyTrafficViewModel> HourlyTraffic { get; set; } = new();
-        public List<TagUsageViewModel> TagUsageStats { get; set; } = new();
+        public List<TagUsageViewModel> TagUsage { get; set; } = new();
     }
 }

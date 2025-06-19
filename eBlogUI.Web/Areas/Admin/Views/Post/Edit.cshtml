@@ -1,9 +1,9 @@
-﻿@model eBlog.Application.DTOs.PostUpdateDto
+@model eBlogUI.Models.Dtos.Post.PostUpdateDto
 @{
     ViewData["Title"] = "Post Güncelle";
-    var categories = ViewBag.Categories as List<eBlog.Application.DTOs.CategoryListDto>;
-    var tags = ViewBag.Tags as List<eBlog.Application.DTOs.TagListDto>;
-    var seo = ViewBag.Seo as eBlog.Application.DTOs.SeoMetadataDto;
+    var categories = ViewBag.Categories as List<eBlogUI.Models.Dtos.Category.CategoryListDto>;
+    var tags = ViewBag.Tags as List<eBlogUI.Models.Dtos.Tag.TagListDto>;
+    var seo = ViewBag.Seo as eBlogUI.Models.Dtos.SeoMetadataDto;
 }
 
 <div class="container-fluid">
@@ -49,20 +49,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Etiketler</label>
-                    <select class="form-control" name="TagIds" multiple>
+                    <label>Tags</label>
+                    <select class="form-control" name="Tags" multiple>
                         @foreach (var tag in tags ?? new())
                         {
-                            <option value="@tag.Id" @(Model.TagIds?.Contains(tag.Id) == true ? "selected" : "")>@tag.Name</option>
+                            <option value="@tag.Name" @(Model.Tags?.Contains(tag.Name) == true ? "selected" : "")>@tag.Name</option>
                         }
                     </select>
                 </div>
 
                 <hr />
                 <h5 class="text-secondary mb-3">SEO Bilgileri</h5>
-
-                <input type="hidden" name="SeoMetadata.Id" value="@seo?.Id" />
-                <input type="hidden" name="SeoMetadata.CanonicalGroupId" value="@seo?.CanonicalGroupId" />
 
                 <div class="form-group">
                     <label>Meta Başlık</label>
@@ -82,19 +79,27 @@
                 </div>
                 <div class="form-group">
                     <label>OG Başlık</label>
-                    <input type="text" class="form-control" name="SeoMetadata.OpenGraphTitle" value="@seo?.OpenGraphTitle" />
+                    <input type="text" class="form-control" name="SeoMetadata.OgTitle" value="@seo?.OgTitle" />
                 </div>
                 <div class="form-group">
                     <label>OG Açıklama</label>
-                    <input type="text" class="form-control" name="SeoMetadata.OpenGraphDescription" value="@seo?.OpenGraphDescription" />
+                    <input type="text" class="form-control" name="SeoMetadata.OgDescription" value="@seo?.OgDescription" />
                 </div>
                 <div class="form-group">
                     <label>OG Görsel</label>
-                    <input type="text" class="form-control" name="SeoMetadata.OpenGraphImage" value="@seo?.OpenGraphImage" />
+                    <input type="text" class="form-control" name="SeoMetadata.OgImage" value="@seo?.OgImage" />
                 </div>
                 <div class="form-group">
-                    <label>Yapılandırılmış Veri (JSON-LD)</label>
-                    <textarea class="form-control" name="SeoMetadata.StructuredDataJson">@seo?.StructuredDataJson</textarea>
+                    <label>Twitter Başlık</label>
+                    <input type="text" class="form-control" name="SeoMetadata.TwitterTitle" value="@seo?.TwitterTitle" />
+                </div>
+                <div class="form-group">
+                    <label>Twitter Açıklama</label>
+                    <input type="text" class="form-control" name="SeoMetadata.TwitterDescription" value="@seo?.TwitterDescription" />
+                </div>
+                <div class="form-group">
+                    <label>Twitter Görsel</label>
+                    <input type="text" class="form-control" name="SeoMetadata.TwitterImage" value="@seo?.TwitterImage" />
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-3">Kaydet</button>

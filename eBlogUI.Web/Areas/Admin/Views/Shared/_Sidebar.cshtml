@@ -1,12 +1,18 @@
-﻿@{
+@{
     var currentPath = Context.Request.Path;
-    var menuItems = new List<(string Title, string Icon, string Url)>
+    var menuItems = new List<(string Title, string Icon, string Url, string[]? SubItems)>
     {
-        ("Dashboard", "fas fa-tachometer-alt", "/Admin/Dashboard"),
-        ("Post Yönetimi", "fas fa-newspaper", "/Admin/Post"),
-        ("Ürünler", "fas fa-box", "/Admin/Product"),
-        ("Siparişler", "fas fa-shopping-cart", "/Admin/Order"),
-        ("SEO", "fas fa-search", "/Admin/Seo")
+        ("Dashboard", "fas fa-tachometer-alt", "/Admin/Dashboard", null),
+        ("İçerik Yönetimi", "fas fa-newspaper", "/#", new[] {
+            "Post Yönetimi|/Admin/Post",
+            "Kategoriler|/Admin/Category",
+            "Etiketler|/Admin/Tag"
+        }),
+        ("Ürün Yönetimi", "fas fa-box", "/#", new[] {
+            "Ürünler|/Admin/Product",
+            "Siparişler|/Admin/Order"
+        }),
+        ("SEO", "fas fa-search", "/Admin/Seo", null)
     };
 }
 
@@ -24,12 +30,43 @@
 
     @foreach (var item in menuItems)
     {
-        var isActive = currentPath.StartsWithSegments(item.Url, StringComparison.OrdinalIgnoreCase);
+        var hasSubItems = item.SubItems != null && item.SubItems.Any();
+        var isActive = currentPath.StartsWithSegments(item.Url, StringComparison.OrdinalIgnoreCase) || 
+                      (hasSubItems && item.SubItems.Any(sub => currentPath.StartsWithSegments(sub.Split('|')[1], StringComparison.OrdinalIgnoreCase)));
+        
         <li class="nav-item @(isActive ? "active" : "")">
-            <a class="nav-link" href="@item.Url">
-                <i class="@item.Icon"></i>
-                <span>@item.Title</span>
-            </a>
+            @if (hasSubItems)
+            {
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse@(item.Title.Replace(" ", ""))" 
+                   aria-expanded="@(isActive ? "true" : "false")" aria-controls="collapse@(item.Title.Replace(" ", ""))">
+                    <i class="@item.Icon"></i>
+                    <span>@item.Title</span>
+                    <i class="fas fa-chevron-down float-right"></i>
+                </a>
+                
+                <div id="collapse@(item.Title.Replace(" ", ""))" class="collapse @(isActive ? "show" : "")" aria-labelledby="heading@(item.Title.Replace(" ", ""))" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        @foreach (var subItem in item.SubItems)
+                        {
+                            var subItemParts = subItem.Split('|');
+                            var subItemTitle = subItemParts[0];
+                            var subItemUrl = subItemParts[1];
+                            var isSubActive = currentPath.StartsWithSegments(subItemUrl, StringComparison.OrdinalIgnoreCase);
+                            
+                            <a class="collapse-item @(isSubActive ? "active" : "")" href="@subItemUrl">
+                                @subItemTitle
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a class="nav-link" href="@item.Url">
+                    <i class="@item.Icon"></i>
+                    <span>@item.Title</span>
+                </a>
+            }
         </li>
     }
 

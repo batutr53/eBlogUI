@@ -1,6 +1,9 @@
 using eBlogUI.Business.Interfaces;
 using eBlogUI.Models.Dashboard;
-using System.Text.Json;
+using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using eBlog.Shared.Results;
 
 namespace eBlogUI.Business.Services
 {
@@ -9,12 +12,14 @@ namespace eBlogUI.Business.Services
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly string _baseUrl;
+        private readonly ILogger<AdminDashboardApiManager> _logger;
 
-        public AdminDashboardApiManager(HttpClient httpClient, IConfiguration configuration)
+        public AdminDashboardApiManager(HttpClient httpClient, IConfiguration configuration, ILogger<AdminDashboardApiManager> logger)
         {
             _httpClient = httpClient;
             _configuration = configuration;
-            _baseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7290";
+            _baseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001";
+            _logger = logger;
         }
 
         public async Task<DashboardTotalsViewModel?> GetDashboardTotalsAsync()
@@ -25,15 +30,12 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<DashboardTotalsViewModel>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<DashboardTotalsViewModel>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting dashboard totals");
             }
             return null;
         }
@@ -46,17 +48,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<TopLikedPostViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<TopLikedPostViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting top liked posts");
             }
-            return new List<TopLikedPostViewModel>();
+            return null;
         }
 
         public async Task<List<TopSellingProductViewModel>?> GetTopSellingProductsAsync()
@@ -67,17 +66,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<TopSellingProductViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<TopSellingProductViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting top selling products");
             }
-            return new List<TopSellingProductViewModel>();
+            return null;
         }
 
         public async Task<List<TopCommentedPostViewModel>?> GetTopCommentedPostsAsync()
@@ -88,17 +84,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<TopCommentedPostViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<TopCommentedPostViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting top commented posts");
             }
-            return new List<TopCommentedPostViewModel>();
+            return null;
         }
 
         public async Task<List<TopBuyerViewModel>?> GetTopBuyersAsync()
@@ -109,17 +102,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<TopBuyerViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<TopBuyerViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting top buyers");
             }
-            return new List<TopBuyerViewModel>();
+            return null;
         }
 
         public async Task<List<TopRatedProductViewModel>?> GetTopRatedProductsAsync()
@@ -130,17 +120,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<TopRatedProductViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<TopRatedProductViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting top rated products");
             }
-            return new List<TopRatedProductViewModel>();
+            return null;
         }
 
         public async Task<List<OrderStatusCountViewModel>?> GetOrderStatusCountsAsync()
@@ -151,20 +138,17 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<OrderStatusCountViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<OrderStatusCountViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting order status counts");
             }
-            return new List<OrderStatusCountViewModel>();
+            return null;
         }
 
-        public async Task<List<UserGrowthStatViewModel>?> GetUserGrowthAsync(int days = 30)
+        public async Task<List<UserGrowthStatViewModel>?> GetUserGrowthStatsAsync(int days = 30)
         {
             try
             {
@@ -172,17 +156,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<UserGrowthStatViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<UserGrowthStatViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting user growth stats");
             }
-            return new List<UserGrowthStatViewModel>();
+            return null;
         }
 
         public async Task<List<CategoryDistributionViewModel>?> GetCategoryDistributionAsync()
@@ -193,17 +174,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<CategoryDistributionViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<CategoryDistributionViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting category distribution");
             }
-            return new List<CategoryDistributionViewModel>();
+            return null;
         }
 
         public async Task<List<ActiveAuthorViewModel>?> GetActiveAuthorsAsync()
@@ -214,17 +192,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<ActiveAuthorViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<ActiveAuthorViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting active authors");
             }
-            return new List<ActiveAuthorViewModel>();
+            return null;
         }
 
         public async Task<List<PostModuleUsageViewModel>?> GetPostModuleUsageAsync()
@@ -235,17 +210,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<PostModuleUsageViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<PostModuleUsageViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting post module usage");
             }
-            return new List<PostModuleUsageViewModel>();
+            return null;
         }
 
         public async Task<List<CouponUsageViewModel>?> GetCouponUsageAsync()
@@ -256,20 +228,17 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<CouponUsageViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<CouponUsageViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting coupon usage");
             }
-            return new List<CouponUsageViewModel>();
+            return null;
         }
 
-        public async Task<List<LoginActivityViewModel>?> GetRecentLoginActivitiesAsync()
+        public async Task<List<LoginActivityViewModel>?> GetRecentLoginsAsync()
         {
             try
             {
@@ -277,17 +246,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<LoginActivityViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<LoginActivityViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting recent logins");
             }
-            return new List<LoginActivityViewModel>();
+            return null;
         }
 
         public async Task<List<ErrorLogCountViewModel>?> GetErrorLogCountsAsync(int days = 7)
@@ -298,17 +264,14 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<ErrorLogCountViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<ErrorLogCountViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting error log counts");
             }
-            return new List<ErrorLogCountViewModel>();
+            return null;
         }
 
         public async Task<List<HourlyTrafficViewModel>?> GetHourlyTrafficAsync()
@@ -319,20 +282,17 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<HourlyTrafficViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<HourlyTrafficViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting hourly traffic");
             }
-            return new List<HourlyTrafficViewModel>();
+            return null;
         }
 
-        public async Task<List<TagUsageViewModel>?> GetTagUsageStatsAsync()
+        public async Task<List<TagUsageViewModel>?> GetTagUsageAsync()
         {
             try
             {
@@ -340,20 +300,17 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<TagUsageViewModel>>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<List<TagUsageViewModel>>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting tag usage");
             }
-            return new List<TagUsageViewModel>();
+            return null;
         }
 
-        public async Task<PersonalSummaryViewModel?> GetPersonalSummaryAsync(Guid userId)
+        public async Task<PersonalSummaryViewModel?> GetPersonalSummaryAsync(string userId)
         {
             try
             {
@@ -361,15 +318,12 @@ namespace eBlogUI.Business.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<PersonalSummaryViewModel>(json, new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                    return JsonConvert.DeserializeObject<PersonalSummaryViewModel>(json);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception
+                _logger.LogError(ex, "Error getting personal summary");
             }
             return null;
         }

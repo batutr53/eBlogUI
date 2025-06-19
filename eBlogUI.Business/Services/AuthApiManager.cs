@@ -1,14 +1,8 @@
-﻿using eBlog.Application.DTOs.Auth;
-using eBlog.Shared.Results;
 using eBlogUI.Business.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
+using eBlogUI.Models.Dtos;
+using Newtonsoft.Json;
+using eBlog.Shared.Results;
 using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace eBlogUI.Business.Services
 {
@@ -21,19 +15,94 @@ namespace eBlogUI.Business.Services
             _httpClient = httpClient;
         }
 
-        public async Task<DataResult<string>> LoginAsync(LoginDto dto)
+        public async Task<IDataResult<AuthUserDto>> LoginAsync(LoginDto dto)
         {
-            var response = await _httpClient.PostAsJsonAsync("auth/login", dto);
-            var json = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = JsonSerializer.Deserialize<DataResult<AuthResponseDto>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
-                return new DataResult<string>(result.Data.Token, result.Success, result.Message);
+                var jsonContent = JsonConvert.SerializeObject(dto);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                
+                var response = await _httpClient.PostAsync("auth/login", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var authUser = JsonConvert.DeserializeObject<AuthUserDto>(responseContent);
+                    
+                    if (authUser != null)
+                        return new SuccessDataResult<AuthUserDto>(authUser, "Giriş başarılı");
+                }
+                
+                return new ErrorDataResult<AuthUserDto>("Giriş bilgileri hatalı");
             }
-
-            return new ErrorDataResult<string>("Kullanıcı adı veya şifre hatalı.");
+            catch (Exception ex)
+            {
+                return new ErrorDataResult<AuthUserDto>($"Hata: {ex.Message}");
+            }
         }
 
+        public async Task<IResult> RegisterAsync(RegisterDto dto)
+        {
+            try
+            {
+                var jsonContent = JsonConvert.SerializeObject(dto);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                
+                var response = await _httpClient.PostAsync("auth/register", content);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    return new SuccessResult("Kayıt başarılı");
+                }
+                
+                return new ErrorResult("Kayıt işlemi başarısız");
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResult($"Hata: {ex.Message}");
+            }
+        }
+
+        public async Task<IResult> LogoutAsync()
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync("auth/logout", null);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    return new SuccessResult("Çıkış başarılı");
+                }
+                
+                return new ErrorResult("Çıkış işlemi başarısız");
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResult($"Hata: {ex.Message}");
+            }
+        }
+
+        public async Task<IDataResult<AuthUserDto>> GetCurrentUserAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync("auth/current-user");
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var user = JsonConvert.DeserializeObject<AuthUserDto>(content);
+                    
+                    if (user != null)
+                        return new SuccessDataResult<AuthUserDto>(user);
+                }
+                
+                return new ErrorDataResult<AuthUserDto>("Kullanıcı bilgileri getirilemedi");
+            }
+            catch (Exception ex)
+            {
+                return new ErrorDataResult<AuthUserDto>($"Hata: {ex.Message}");
+            }
+        }
     }
 }

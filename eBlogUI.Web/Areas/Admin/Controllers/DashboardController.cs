@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using eBlogUI.Business.Interfaces;
 using eBlogUI.Models.Dashboard;
+using Microsoft.Extensions.Logging;
 
 namespace eBlogUI.Web.Areas.Admin.Controllers
 {
@@ -8,10 +9,12 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
     public class DashboardController : Controller
     {
         private readonly IAdminDashboardApiService _dashboardService;
+        private readonly ILogger<DashboardController> _logger;
 
-        public DashboardController(IAdminDashboardApiService dashboardService)
+        public DashboardController(IAdminDashboardApiService dashboardService, ILogger<DashboardController> logger)
         {
             _dashboardService = dashboardService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -37,10 +40,10 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
                     LoadActiveAuthors(viewModel),
                     LoadPostModuleUsage(viewModel),
                     LoadCouponUsage(viewModel),
-                    LoadRecentLoginActivities(viewModel),
+                    LoadRecentLogins(viewModel),
                     LoadErrorLogCounts(viewModel),
                     LoadHourlyTraffic(viewModel),
-                    LoadTagUsageStats(viewModel)
+                    LoadTagUsage(viewModel)
                 };
 
                 await Task.WhenAll(tasks);
@@ -48,6 +51,7 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 // Log exception
+                _logger.LogError(ex, "Dashboard verileri yüklenirken hata oluştu");
                 TempData["ErrorMessage"] = "Dashboard verileri yüklenirken bir hata oluştu.";
             }
 
@@ -86,7 +90,7 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
 
         private async Task LoadUserGrowthStats(DashboardViewModel viewModel)
         {
-            viewModel.UserGrowthStats = await _dashboardService.GetUserGrowthAsync(30) ?? new List<UserGrowthStatViewModel>();
+            viewModel.UserGrowthStats = await _dashboardService.GetUserGrowthStatsAsync(30) ?? new List<UserGrowthStatViewModel>();
         }
 
         private async Task LoadCategoryDistribution(DashboardViewModel viewModel)
@@ -109,9 +113,9 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
             viewModel.CouponUsage = await _dashboardService.GetCouponUsageAsync() ?? new List<CouponUsageViewModel>();
         }
 
-        private async Task LoadRecentLoginActivities(DashboardViewModel viewModel)
+        private async Task LoadRecentLogins(DashboardViewModel viewModel)
         {
-            viewModel.RecentLoginActivities = await _dashboardService.GetRecentLoginActivitiesAsync() ?? new List<LoginActivityViewModel>();
+            viewModel.RecentLogins = await _dashboardService.GetRecentLoginsAsync() ?? new List<LoginActivityViewModel>();
         }
 
         private async Task LoadErrorLogCounts(DashboardViewModel viewModel)
@@ -124,9 +128,9 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
             viewModel.HourlyTraffic = await _dashboardService.GetHourlyTrafficAsync() ?? new List<HourlyTrafficViewModel>();
         }
 
-        private async Task LoadTagUsageStats(DashboardViewModel viewModel)
+        private async Task LoadTagUsage(DashboardViewModel viewModel)
         {
-            viewModel.TagUsageStats = await _dashboardService.GetTagUsageStatsAsync() ?? new List<TagUsageViewModel>();
+            viewModel.TagUsage = await _dashboardService.GetTagUsageAsync() ?? new List<TagUsageViewModel>();
         }
 
         [HttpGet]
@@ -137,7 +141,7 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
                 switch (chartType.ToLower())
                 {
                     case "usergrowth":
-                        var userGrowth = await _dashboardService.GetUserGrowthAsync(30);
+                        var userGrowth = await _dashboardService.GetUserGrowthStatsAsync(30);
                         return Json(userGrowth);
                     
                     case "categorydistribution":
@@ -164,6 +168,13 @@ namespace eBlogUI.Web.Areas.Admin.Controllers
             {
                 return StatusCode(500, "Veri yüklenirken hata oluştu");
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserGrowthData(int days = 30)
+        {
+            var data = await _dashboardService.GetUserGrowthStatsAsync(days);
+            return Json(data ?? new List<UserGrowthStatViewModel>());
         }
     }
 }
